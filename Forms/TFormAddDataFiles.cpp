@@ -36,15 +36,16 @@ void __fastcall TFormAddDataFiles::FormClose(TObject *Sender,
 // ---------------------------------------------------------------------------
 
 void __fastcall TFormAddDataFiles::lbxFileDblClick(TObject *Sender) {
-    FileList->vAppendFile(lbxDir->Directory + "\\" +
-        lbxFile->Items->Strings[lbxFile->ItemIndex]);
-    FileList->vShowFilesListBox(lbxResult);
+	FileList->vAppendFile(lbxDir->Directory + "\\" +
+		lbxFile->Items->Strings[lbxFile->ItemIndex]);
+	lbxFile->Items->Delete(lbxFile->ItemIndex);
+	FileList->vShowFilesListBox(lbxResult);
 }
 // ---------------------------------------------------------------------------
 
 void __fastcall TFormAddDataFiles::lbxResultDblClick(TObject *Sender) {
-    FileList->vDeleteFile(lbxResult->ItemIndex);
-    FileList->vShowFilesListBox(lbxResult);
+	FileList->vDeleteFile(lbxResult->ItemIndex);
+	FileList->vShowFilesListBox(lbxResult);
 }
 // ---------------------------------------------------------------------------
 
@@ -56,14 +57,20 @@ void __fastcall TFormAddDataFiles::btnLoadFilesClick(TObject *Sender) {
 	UsedGearList = new TList();
 	memLog->Clear();
 	memInfo->Clear();
+	vector<AnsiString> Repeats = {};
 
-    if (FileList->iGetCountFiles() > 0) {
+	if (FileList->iGetCountFiles() > 0) {
 		for (int i = 0; i < FileList->iGetCountFiles(); i++) {
-			vLoadGearsFromExcel(SuspGearList, StanGearList, GoodGearList, FileList->sGetFile(i), memLog, memInfo);
-            FormAddDataFiles->ProgressSet(i, FileList->iGetCountFiles());
+			if (find(begin(Repeats), end(Repeats), FileList->sGetFile(i)) == end(Repeats)) {
+				Repeats.push_back(FileList->sGetFile(i));
+                vLoadGearsFromExcel(SuspGearList, StanGearList, GoodGearList, FileList->sGetFile(i), memLog, memInfo);
+			}
+			FormAddDataFiles->ProgressSet(i + 1, FileList->iGetCountFiles());
 		}
-		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList);
-        FormAddDataFiles->ProgressReset();
+		Form1->Memo1->Clear();
+		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList, Form1->Memo1);
+		Form1->Show();
+		FormAddDataFiles->ProgressReset();
 	}
     else {
         ShowMessage("Choose files");
@@ -159,36 +166,40 @@ void __fastcall TFormAddDataFiles::FormResize(TObject *Sender) {
         this->ClientHeight = FORM_MIN_HEIGHT;
     }
 
-    setPosition(Label4, 35, 65);
-    setPosition(cbxDrive, 55, 10);
+	setPosition(Label4, 35, 65);
+	setPosition(cbxDrive, 55, 10);
 
     setPosition(Label3, 90, 65);
 
     setPosition(lbxDir, 110, 10);
-    setHeight(lbxDir, this->ClientHeight - 120);
+	//setHeight(lbxDir, this->ClientHeight - 120);
+	setSize(lbxDir, cbxDrive->Width, this->ClientHeight - 120);
 
-    setPosition(memLog, 10, 240);
-    setSize(memLog, this->ClientWidth - 360, 80);
+	setPosition(Label2, 90, cbxDrive->Left + cbxDrive->Width + 10);
 
-    setPosition(Label2, 90, 280);
+	setPosition(lbxFile, 110, cbxDrive->Left + cbxDrive->Width + 10);
+	setSize(lbxFile, 400, this->ClientHeight - 400);
 
-    setPosition(lbxFile, 110, 240);
-    setSize(lbxFile, 200, this->ClientHeight - 220);
+	setPosition(lbxResult, 110, lbxFile->Left + lbxFile->Width + 10);
+	setSize(lbxResult, this->ClientWidth - lbxResult->Left - 10, this->ClientHeight - 400);
 
-    setPosition(memInfo, this->ClientHeight - 90, 240);
-    setSize(memInfo, this->ClientWidth - 360, 80);
+	setPosition(memInfo, lbxFile->Top + lbxFile->Height + 10, cbxDrive->Left + cbxDrive->Width + 10);
+	setSize(memInfo, lbxFile->Width + lbxResult->Width - 100, this->ClientHeight - memInfo->Top - 10);
 
-    setPosition(lbxResult, 110, 460);
-    setSize(lbxResult, this->ClientWidth - 470, this->ClientHeight - 220);
+	setPosition(Label1, 90, lbxResult->Left + (lbxResult->Width / 2) -
+		Label1->Width / 2);
 
-    setPosition(Label1, 90, lbxResult->Left + (lbxResult->Width / 2) -
-        Label1->Width / 2);
+	setPosition(memLog, 10, cbxDrive->Left + cbxDrive->Width + 10);
+	setSize(memLog, lbxFile->Width + lbxResult->Width - 120, 80);
 
-    setPosition(btnInfo, 10, this->ClientWidth - 105);
+	setPosition(btnInfo, 10, memLog->Left + memLog->Width + 10);
+	setSize(btnInfo, this->ClientWidth - btnInfo->Left - 10, memLog->Height/2);
 
-    setPosition(btnSystem, 50, this->ClientWidth - 105);
+	setPosition(btnSystem, 50, memLog->Left + memLog->Width + 10);
+	setSize(btnSystem, this->ClientWidth - btnSystem->Left - 10, memLog->Height/2);
 
-    setPosition(btnLoadFiles, this->ClientHeight - 90, this->ClientWidth - 90);
+	setPosition(btnLoadFiles, memInfo->Top, memInfo->Left + memInfo->Width + 10);
+	setSize(btnLoadFiles, this->ClientWidth - btnLoadFiles->Left - 10, memInfo->Height);
 }
 // ---------------------------------------------------------------------------
 void __fastcall TFormAddDataFiles::FormCreate(TObject *Sender)
@@ -196,4 +207,18 @@ void __fastcall TFormAddDataFiles::FormCreate(TObject *Sender)
     FileList = new TFileList();
 }
 //---------------------------------------------------------------------------
+
+
+void __fastcall TFormAddDataFiles::Button1Click(TObject *Sender)
+{
+	while (lbxFile->Items->Count != 0) {
+        FileList->vAppendFile(lbxDir->Directory + "\\" +
+		lbxFile->Items->Strings[0]);
+		lbxFile->Items->Delete(0);
+		FileList->vShowFilesListBox(lbxResult);
+	}
+}
+//---------------------------------------------------------------------------
+
+
 

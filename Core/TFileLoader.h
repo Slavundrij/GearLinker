@@ -3,6 +3,7 @@
 #ifndef TFileLoaderH
 #define TFileLoaderH
 
+#include "TFormAddDataFiles.h"
 #include "Types.h"
 #include <System.Classes.hpp>
 #include <Vcl.StdCtrls.hpp>
@@ -12,6 +13,13 @@
 using namespace std;
 
 // ---------------------------------------------------------------------------
+struct possiblePair {
+	TGear* Gear1;
+	TGear* Gear2;
+	UnicodeString wNum;
+	double criteria;
+};
+
 
 class TFileList {
 public:
@@ -30,14 +38,14 @@ public:
 private:
 };
 
-void BuildGearboxes(TList* suspGearList, TList* stanGearList, TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList, TFileList* FileList);
+void BuildGearboxes(TList* suspGearList, TList* stanGearList, TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList, TFileList* FileList, TMemo* memoRes);
 
 void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList, TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo);
 void getFilledMeasurementRows(unsigned int rowCnt, unsigned int Col,
 	vector<unsigned int>* measurements);
-int fillGearMeasurments(vector<unsigned int>* measurements,
+int fillGearMeasurments(vector<unsigned int>* measurements, TGear* Gear,
 	TList* listparams, int col);
-int checkMasurementsData(TList* listparams);
+int checkMasurementsData(TList* listparams, UnicodeString _PGTS);
 bool measureInLimits(stMeasurement* Measurment);
 bool isCellFilled(AnsiString cell);
 
@@ -45,16 +53,22 @@ void buildGoodGearboxes(TList* goodList);
 bool findGear(TList* goodList, UnicodeString desig, vector<TGear*>* gears);
 
 bool findSpecialGear(TList* gearList, int number, vector<TGear*>* measurements, TMemo* memoLog);
-void buildStandartGearboxes(TList* stanList, TList* UsedGearList, TMemo* memoLog, TMemo* memoInfo);
+void buildStandartGearboxes(TList* stanList, TList* UsedGearList, TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes);
 
-double diameter(TGear* gear);
+double diameter(TGear* gear, TMemo* memoLog);
+
+bool cellIsMeasure(UnicodeString str);
 
 int gearWheel(int n);
-double f(double x, int n, double Ek);
-double digitalCalc(int n, double Ek, TMemo* memoLog);
-double calculateTolerance(TGear* gear, int n, TMemo* memoLog);
+double f(double x, int m, double Dr, double Ek);
+double digitalCalc(int n, double Dr, double Ek, TMemo* memoLog);
+double calculateTolerance(TGear* gear, TGear* wheel, int n, TMemo* memoLog);
 UnicodeString correctName(UnicodeString ustr);
 
 void PaintUsedGears(TList* UsedGearList, TFileList* FileList, TMemo* memoInfo);
+
+possiblePair* findWorstPair(TList* _FindMatches, TMemo* _memoLog);
+void clearAllRepeats(TList* FindMatches, UnicodeString wNum, TMemo* memoInfo);
+UnicodeString parseFileName(AnsiString _FileName);
 
 #endif

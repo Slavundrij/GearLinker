@@ -66,7 +66,10 @@ public:
     TDesignation Desgination; // Номер детали - ПГТС. ...
     unsigned int uiOrder; // Номер заказа
 	UnicodeString sName; // Название детали (чтоб было)
-    UnicodeString sNumber; // Номер детали (на нем отмечено типо)
+	UnicodeString sNumber; // Номер детали (на нем отмечено типо)
+	double extTol;
+	double rollerD;
+	UnicodeString parentFile;
     TList *listParams;
 
 private:

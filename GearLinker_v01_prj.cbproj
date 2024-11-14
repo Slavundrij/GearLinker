@@ -118,6 +118,11 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <LinkPackageStatics>rtl.lib;vcl.lib;vclx.lib;VclSmp.lib;bcbsmp.lib</LinkPackageStatics>
         <UsePackages>false</UsePackages>
+        <Icon_MainIcon>GearLinker_v01_prj_Icon.ico</Icon_MainIcon>
+        <VerInfo_MajorVer>0</VerInfo_MajorVer>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=0.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <UWP_CppLogo44>C:\Users\CED_SAIL_1\Downloads\Telegram Desktop\Rob-Sanders-Gear-Spur-gear.256.png</UWP_CppLogo44>
+        <UWP_CppLogo150>C:\Users\CED_SAIL_1\Downloads\Telegram Desktop\Rob-Sanders-Gear-Spur-gear.256.png</UWP_CppLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <Defines>NDEBUG;$(Defines)</Defines>
@@ -154,6 +159,12 @@
             <DependentOn>Forms\TFormAddDataFiles.h</DependentOn>
             <BuildOrder>3</BuildOrder>
         </CppCompile>
+        <CppCompile Include="Forms\Unit1.cpp">
+            <Form>Form1</Form>
+            <FormType>dfm</FormType>
+            <DependentOn>Forms\Unit1.h</DependentOn>
+            <BuildOrder>6</BuildOrder>
+        </CppCompile>
         <PCHCompile Include="GearLinker_v01.h">
             <BuildOrder>1</BuildOrder>
             <PCH>true</PCH>
@@ -161,6 +172,7 @@
         <CppCompile Include="GearLinker_v01_prj.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
+        <FormResources Include="Forms\Unit1.dfm"/>
         <FormResources Include="Forms\TFormAddDataFiles.dfm"/>
         <FormResources Include="Forms\FormStart.dfm"/>
         <BuildConfiguration Include="Release">
@@ -201,18 +213,18 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32260mt.dll" Class="DependencyModule"/>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64280.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32260.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64260mt.dll" Class="DependencyModule">
-                    <Platform Name="Win64">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32260mt.dll" Class="DependencyModule"/>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64280.dll" Class="DependencyModule">
                     <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -229,6 +241,13 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName=".\Win32\Debug\GearLinker_v01_prj.tds" Configuration="Debug" Class="DebugSymbols"/>
+                <DeployFile LocalName="C:\Users\CED_SAIL_1\Downloads\Telegram Desktop\Rob-Sanders-Gear-Spur-gear.256.png" Configuration="Debug" Class="UWP_CppLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo44x44.png</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName=".\Win32\Debug\GearLinker_v01_prj.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64260mt.dll" Class="DependencyModule"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true'" LocalName="$(BDS)\Redist\osx32\libcgcrtl.dylib" Class="DependencyModule">

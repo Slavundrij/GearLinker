@@ -6,6 +6,7 @@
 //---------------------------------------------------------------------------
 USEFORM("Forms\TFormAddDataFiles.cpp", FormAddDataFiles);
 USEFORM("Forms\FormStart.cpp", FormLaunch);
+USEFORM("Forms\Unit1.cpp", Form1);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -14,8 +15,10 @@ int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		CoInitialize(NULL);
 		Application->Initialize();
 		Application->MainFormOnTaskBar = true;
+		Application->Title = "E.S.V.A";
 		Application->CreateForm(__classid(TFormLaunch), &FormLaunch);
 		Application->CreateForm(__classid(TFormAddDataFiles), &FormAddDataFiles);
+		Application->CreateForm(__classid(TForm1), &Form1);
 		Application->Run();
     }
     catch (Exception &exception)
