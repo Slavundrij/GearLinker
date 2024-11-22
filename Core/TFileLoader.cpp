@@ -722,7 +722,7 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 double diameter(TGear* gear, TMemo* memoLog) {
 	for (int i = 0; i < gear->listParams->Count; i++) {
 		stMeasurement* st = (stMeasurement*)gear->listParams->Items[i];
-		if (st->sKeyMeasure == "9.6.3.") {
+		if (st->sKeyMeasure == "9.6.1.") {
 			return st->fMeasure;
 		}
 	}
@@ -928,13 +928,14 @@ int checkMasurementsData(TList* listparams, UnicodeString _PGTS) {
 		stMeasurement* Measurment = (stMeasurement*)listparams->Items[i];
 		if (Measurment->sKeyMeasure == "9.6.1.") {
 			e_controller = measureInLimits(Measurment);
+			is_filled = true;
 		}
 		else if (Measurment->sKeyMeasure == "9.6.2.") {
 			e_operator = measureInLimits(Measurment);
 		}
 		else if (Measurment->sKeyMeasure == "9.6.3.") {
 			e_roller = measureInLimits(Measurment);
-			is_filled = true;
+			//is_filled = true;
 		}
 		else if (Measurment->sKeyMeasure == "9.9.") {
 			e_runout = measureInLimits(Measurment);
