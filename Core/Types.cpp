@@ -8,32 +8,6 @@
 
 vector<UnicodeString> gears_id = {"ÏÃÒÑ.721144.007", "ÏÃÒÑ.721134.015", "ÏÃÒÑ.721164.005", "ÏÃÒÑ.721134.016", "ÏÃÒÑ.721164.006", "ÏÃÒÑ.721134.014", "ÏÃÒÑ.721164.007"};
 UnicodeString Outshaft = "ÏÃÒÑ.721124.006";
-
-/*
- class TDesignation {
- public:
- TDesignation();
- TDesignation(UnicodeString _sDesignation);
- TDesignation(UnicodeString _sCodeDeveloper, unsigned int _uiClassification,
- unsigned int _uiRegistrationNumber, unsigned int _uiVariation);
-
- ~TDesignation();
-
- void vUpdate(UnicodeString _sCodeDeveloper, unsigned int _uiClassification,
- unsigned int _uiRegistrationNumber, unsigned int _uiVariation);
-
- UnicodeString getStringDesignation();
-
- private:
- bool flagExist = false;
-
- UnicodeString sCodeDeveloper;
- unsigned int uiClassification;
- unsigned int uiRegistrationNumber;
- unsigned int uiVariation;
-
- };
- */
 /////////////////////////////////////////////////////////////
 TDesignation::TDesignation() {
     flagExist = false;
@@ -115,21 +89,6 @@ UnicodeString TDesignation::getStringDesignation() {
 	}
 }
 
-/*
- class TGear {
- public:
- TGear();
- ~TGear();
-
- TDesignation Desgination; // Íîìåð äåòàëè - ÏÃÒÑ. ...
- unsigned int uiOrder; // Íîìåð çàêàçà
- UnicodeString sName; // Íàçâàíèå äåòàëè (÷òîá áûëî)
- UnicodeString sNumber; // Íîìåð äåòàëè (íà íåì îòìå÷åíî òèïî)
- TList *listParams;
-
- private:
- };
- */
 ////////////////////////////////////////////////////
 TGear::TGear(TDesignation _Desgination, unsigned int _uiOrder, UnicodeString _sName, UnicodeString _sNumber) {
 	Desgination = _Desgination;
@@ -142,18 +101,6 @@ TGear::~TGear() {
 
 }
 
-/*
-class TGearing {
-public:
-	TGearing(TGear* gear1, TGear* gear2);
-	~TGearing();
-
-	TGear* Gear1;
-	TGear* Gear2;
-
-private:
-};
- */
 ////////////////////////////////////////////////////
 TGearing::TGearing(TGear* gear1, TGear* gear2) {
 	Gear1 = gear1;
@@ -162,29 +109,6 @@ TGearing::TGearing(TGear* gear1, TGear* gear2) {
 
 TGearing::~TGearing() {
 }
-
-/*
-class TGearbox_DB65 {
-public:
-	TGearbox_DB65();
-	~TGearbox_DB65();
-
-	void vSetGearing1(TGearing* _gearing);
-	void vSetGearing2(TGearing* _gearing);
-	void vSetGearing3(TGearing* _gearing);
-	void vSetGearing4(TGearing* _gearing);
-
-	void vSave2JSON();
-
-private:
-
-	TAxis Axis1;
-	TAxis Axis2;
-	TAxis Axis3;
-	TAxis Axis4;
-	TAxis Axis5;
-};
-*/
 
 TGearbox_DB65::TGearbox_DB65() {
 	TAxis axis1, axis2, axis3, axis4, axis5;
@@ -243,7 +167,7 @@ void TGearbox_DB65::vSave2JSON(TJSONArray* Gearboxes) {
 		joints->AddPair("Joint1", joint);
 		joint->AddPair( new TJSONPair("Type", (UnicodeString)numToStr(Axis[i]->eTypeJoint1)) );
 		joint->AddPair( new TJSONPair("Designation", (UnicodeString)Axis[i]->Gear1->Desgination.getStringDesignation()) );
-		joint->AddPair( new TJSONPair("Order", Axis[i]->Gear1->uiOrder) );
+		joint->AddPair( new TJSONPair("Order", (UnicodeString)Axis[i]->Gear1->uiOrder) );
 		joint->AddPair( new TJSONPair("Title", (UnicodeString)Axis[i]->Gear1->sName) );
 		joint->AddPair( new TJSONPair("Number", (UnicodeString)Axis[i]->Gear1->sNumber) );
 
@@ -251,7 +175,7 @@ void TGearbox_DB65::vSave2JSON(TJSONArray* Gearboxes) {
 		joints->AddPair("Joint2", joint);
 		joint->AddPair( new TJSONPair("Type", (UnicodeString)numToStr(Axis[i]->eTypeJoint2)) );
 		joint->AddPair( new TJSONPair("Designation", (UnicodeString)Axis[i]->Gear2->Desgination.getStringDesignation()) );
-		joint->AddPair( new TJSONPair("Order", Axis[i]->Gear2->uiOrder) );
+		joint->AddPair( new TJSONPair("Order", (UnicodeString)Axis[i]->Gear2->uiOrder) );
 		joint->AddPair( new TJSONPair("Title", (UnicodeString)Axis[i]->Gear2->sName) );
 		joint->AddPair( new TJSONPair("Number", (UnicodeString)Axis[i]->Gear2->sNumber) );
 
@@ -272,27 +196,6 @@ UnicodeString numToStr(enum typeJoint type) {
 		return "None";
     }
 }
-
-/*
-class TAxis {
-public:
-	TAxis();
-	~TAxis();
-
-	void vSetJoint1(enum typeJoint eTypeJoint, TGear* _Gear);
-	void vSetJoint2(enum typeJoint eTypeJoint, TGear* _Gear);
-
-	enum typeJoint eGetJoint1(TGear* _Gear);
-	enum typeJoint eGetJoint2(TGear* _Gear);
-
-private:
-	enum typeJoint eTypeJoint1;
-	TGear* Gear1;
-
-	enum typeJoint eTypeJoint2;
-	TGear* Gear2;
-};
-*/
 
 TAxis::TAxis() {
 }

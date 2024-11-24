@@ -44,22 +44,6 @@ vector<UnicodeString>gears_id = {
 	"ПГТС.721144.007", "ПГТС.721134.015", "ПГТС.721164.005", "ПГТС.721134.016",
 	"ПГТС.721164.006", "ПГТС.721134.014", "ПГТС.721164.007", "ПГТС.721124.006"};
 
-/*
- class TFileLoader {
- public:
- TFileLoader();
- ~TFileLoader();
-
- TStringList* pFileNames;
-
- void vAppendFile(UnicodeString sNewFile);
- void vDeleteFile(int iDeleteFileIndex);
- int iGetCountFiles();
- UnicodeString sGetFile(int iNumber);
-
- private:
- };
- */
 TFileList::TFileList() {
 	pFileNames = new TStringList();
 }
@@ -134,7 +118,11 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 		// Secondly suggesting to start with order № since its common for this///
 		// sheet/////////////////////////////////////////////////////////////////
 		AnsiString sOrderNum = vCells.OlePropertyGet("Item", 3, 3);
-		unsigned int orderNum = sOrderNum.ToInt();
+		unsigned int orderNum = 0;
+		try {
+			orderNum = sOrderNum.ToInt();
+		} catch (...) {
+		}
 		UnicodeString sGearName = vCells.OlePropertyGet("Item", 3, 12);
 		sGearName = correctName(sGearName);
 		////////////////////////////////////////////////////////////////////////

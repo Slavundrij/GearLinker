@@ -2,20 +2,18 @@ object FormAddDataFiles: TFormAddDataFiles
   Left = 0
   Top = 0
   Caption = #1055#1086#1076#1073#1086#1088
-  ClientHeight = 620
-  ClientWidth = 1080
+  ClientHeight = 619
+  ClientWidth = 1076
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 688
