@@ -83,13 +83,10 @@ void TFileList::vShowFilesListBox(TListBox* lsb) {
 
 }
 
-////////////////////////////////////////////////////////////
-////
+////////////////////////////////////////////////////////////////////////////////
 
 Variant ExcelApp1, ExcelBooks1, Book1, Sheets1, ExcelApp, ExcelBooks, ExcelBook,
 	ExcelSheet;
-TJSONObject *o = new TJSONObject();
-TJSONArray *Gearboxes = new TJSONArray();
 
 void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 	TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo) {
@@ -184,14 +181,12 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 	TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList,
 	TFileList* FileList, TMemo* memoRes) {
-	auto t = time(nullptr);
-	auto tm = *localtime(&t);
-	o->AddPair(new TJSONPair("Date", Format("%d.%d.%d", tm.tm_mday,
-		tm.tm_mon + 1, tm.tm_year + 1900)));
-	o->AddPair("Gearboxes", Gearboxes);
 
 	memoInfo->Lines->Add("--------------------------------------------");
 	memoInfo->Lines->Add("Расчет соединений...");
+	memoInfo->Lines->Add("--------------------------------------------");
+    memoInfo->Lines->Add("--------------------------------------------");
+	memoInfo->Lines->Add("Сохраните файлы excel и json в удобное место");
 	memoInfo->Lines->Add("--------------------------------------------");
 
 	// buildGoodGearboxes(goodGearList);
@@ -200,25 +195,8 @@ void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 	memoInfo->Lines->Add("--------------------------------------------");
 	memoInfo->Lines->Add("Закраска использованных деталей...");
 	memoInfo->Lines->Add("--------------------------------------------");
-	memoInfo->Lines->Add("--------------------------------------------");
-	memoInfo->Lines->Add("Сохраните файлы excel и json в удобное место");
-	memoInfo->Lines->Add("--------------------------------------------");
 
 	PaintUsedGears(UsedGearList, FileList, memoInfo);
-
-	remove("DB65.json");
-
-	if (FormAddDataFiles->SaveDialog1->Execute()) {
-		// auto_ptr<TStreamWriter>DestFileStream(new TStreamWriter("DB65.json",
-		// TEncoding::UTF8));
-
-		auto_ptr<TStreamWriter>DestFileStream
-			(new TStreamWriter(FormAddDataFiles->SaveDialog1->FileName +
-			".json", TEncoding::UTF8));
-
-		DestFileStream->Write(o->ToString());
-		DestFileStream->Close();
-	}
 
 	delete stanGearList;
 	delete UsedGearList;
@@ -275,6 +253,7 @@ void PaintUsedGears(TList* UsedGearList, TFileList* FileList, TMemo* memoInfo) {
 	}
 }
 
+/*
 void buildGoodGearboxes(TList* goodList) {
 	vector<TGear*>gears;
 	while (goodList->Count != 0) {
@@ -307,6 +286,7 @@ void buildGoodGearboxes(TList* goodList) {
 	}
 	return;
 }
+*/
 
 int gearInList(TList* stanList, int num) {
 	for (int i = 0; i < stanList->Count; i++) {
@@ -444,59 +424,82 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 			gearingN[i]++;
 		}
 	}
-	while (Gears_and_Wheels_1.size() != 0 && Gears_and_Wheels_2.size() != 0 &&
+    for (int i = 0; i < 4; i++) {
+		memoInfo->Lines->Add(Format("Найдено зацеплений %s+%s: %d",
+		gears_id[i*2], gears_id[i*2 + 1], gearingN[i]));
+	}
+
+	if(Gears_and_Wheels_1.size() != 0 && Gears_and_Wheels_2.size() != 0 &&
 		   Gears_and_Wheels_3.size() != 0 && Gears_and_Wheels_4.size() != 0)
 	{
-		gearboxN++;
+		TJSONObject *o = new TJSONObject();
+		TJSONArray *Gearboxes = new TJSONArray();
+        auto t = time(nullptr);
+		auto tm = *localtime(&t);
+		o->AddPair(new TJSONPair("Date", Format("%d.%d.%d", tm.tm_mday,
+			tm.tm_mon + 1, tm.tm_year + 1900)));
+		o->AddPair("Gearboxes", Gearboxes);
+		while (Gears_and_Wheels_1.size() != 0 && Gears_and_Wheels_2.size() != 0 &&
+			   Gears_and_Wheels_3.size() != 0 && Gears_and_Wheels_4.size() != 0)
+		{
+			gearboxN++;
 
-		UsedGearList->Add(Gears_and_Wheels_1[0]);
-		UsedGearList->Add(Gears_and_Wheels_1[1]);
-		UsedGearList->Add(Gears_and_Wheels_2[0]);
-		UsedGearList->Add(Gears_and_Wheels_2[1]);
-		UsedGearList->Add(Gears_and_Wheels_3[0]);
-		UsedGearList->Add(Gears_and_Wheels_3[1]);
-		UsedGearList->Add(Gears_and_Wheels_4[0]);
-		UsedGearList->Add(Gears_and_Wheels_4[1]);
+			UsedGearList->Add(Gears_and_Wheels_1[0]);
+			UsedGearList->Add(Gears_and_Wheels_1[1]);
+			UsedGearList->Add(Gears_and_Wheels_2[0]);
+			UsedGearList->Add(Gears_and_Wheels_2[1]);
+			UsedGearList->Add(Gears_and_Wheels_3[0]);
+			UsedGearList->Add(Gears_and_Wheels_3[1]);
+			UsedGearList->Add(Gears_and_Wheels_4[0]);
+			UsedGearList->Add(Gears_and_Wheels_4[1]);
 
-        TDesignation desMot("");
-		TGear Motor(desMot, 0, L"Двигатель", 0);
-		TDesignation desBlanc("");
-		TGear blanc(desBlanc, 0, "", 0);
+			TDesignation desMot("");
+			TGear Motor(desMot, 0, L"Двигатель", 0);
+			TDesignation desBlanc("");
+			TGear blanc(desBlanc, 0, "", 0);
 
-		names.push_back(Gears_and_Wheels_1[0]->sNumber);
-		names.push_back(Gears_and_Wheels_1[1]->sNumber);
-		names.push_back(Gears_and_Wheels_2[0]->sNumber);
-		names.push_back(Gears_and_Wheels_2[1]->sNumber);
-		names.push_back(Gears_and_Wheels_3[0]->sNumber);
-		names.push_back(Gears_and_Wheels_3[1]->sNumber);
-		names.push_back(Gears_and_Wheels_4[0]->sNumber);
-		names.push_back(Gears_and_Wheels_4[1]->sNumber);
+			names.push_back(Gears_and_Wheels_1[0]->sNumber);
+			names.push_back(Gears_and_Wheels_1[1]->sNumber);
+			names.push_back(Gears_and_Wheels_2[0]->sNumber);
+			names.push_back(Gears_and_Wheels_2[1]->sNumber);
+			names.push_back(Gears_and_Wheels_3[0]->sNumber);
+			names.push_back(Gears_and_Wheels_3[1]->sNumber);
+			names.push_back(Gears_and_Wheels_4[0]->sNumber);
+			names.push_back(Gears_and_Wheels_4[1]->sNumber);
 
-		TGearing gearing1(Gears_and_Wheels_1[0], Gears_and_Wheels_1[1]);
-		TGearing gearing2(Gears_and_Wheels_2[0], Gears_and_Wheels_2[1]);
-		TGearing gearing3(Gears_and_Wheels_3[0], Gears_and_Wheels_3[1]);
-		TGearing gearing4(Gears_and_Wheels_4[0], Gears_and_Wheels_4[1]);
+			TGearing gearing1(Gears_and_Wheels_1[0], Gears_and_Wheels_1[1]);
+			TGearing gearing2(Gears_and_Wheels_2[0], Gears_and_Wheels_2[1]);
+			TGearing gearing3(Gears_and_Wheels_3[0], Gears_and_Wheels_3[1]);
+			TGearing gearing4(Gears_and_Wheels_4[0], Gears_and_Wheels_4[1]);
 
-		TGearbox_DB65 DB65;
-		DB65.vSetGearing1(&gearing1, &Motor);
-		DB65.vSetGearing2(&gearing2);
-		DB65.vSetGearing3(&gearing3);
-		DB65.vSetGearing4(&gearing4, &blanc);
+			TGearbox_DB65 DB65;
+			DB65.vSetGearing1(&gearing1, &Motor);
+			DB65.vSetGearing2(&gearing2);
+			DB65.vSetGearing3(&gearing3);
+			DB65.vSetGearing4(&gearing4, &blanc);
 
-		DB65.vSave2JSON(Gearboxes);
+			DB65.vSave2JSON(Gearboxes);
 
-		Gears_and_Wheels_1.erase(Gears_and_Wheels_1.begin(), Gears_and_Wheels_1.begin()+2);
-		Gears_and_Wheels_2.erase(Gears_and_Wheels_2.begin(), Gears_and_Wheels_2.begin()+2);
-		Gears_and_Wheels_3.erase(Gears_and_Wheels_3.begin(), Gears_and_Wheels_3.begin()+2);
-		Gears_and_Wheels_4.erase(Gears_and_Wheels_4.begin(), Gears_and_Wheels_4.begin()+2);
-	}
+			Gears_and_Wheels_1.erase(Gears_and_Wheels_1.begin(), Gears_and_Wheels_1.begin()+2);
+			Gears_and_Wheels_2.erase(Gears_and_Wheels_2.begin(), Gears_and_Wheels_2.begin()+2);
+			Gears_and_Wheels_3.erase(Gears_and_Wheels_3.begin(), Gears_and_Wheels_3.begin()+2);
+			Gears_and_Wheels_4.erase(Gears_and_Wheels_4.begin(), Gears_and_Wheels_4.begin()+2);
+		}
 
-	for (int i = 0; i < 4; i++) {
-		memoInfo->Lines->Add(Format("Найдено зацеплений %s+%s: %d",
-			gears_id[i*2], gears_id[i*2 + 1], gearingN[i]));
-	}
+		remove("DB65.json");
 
-	if (gearboxN != 0) {
+		if (FormAddDataFiles->SaveDialog1->Execute()) {
+			// auto_ptr<TStreamWriter>DestFileStream(new TStreamWriter("DB65.json",
+			// TEncoding::UTF8));
+
+			auto_ptr<TStreamWriter>DestFileStream
+				(new TStreamWriter(FormAddDataFiles->SaveDialog1->FileName +
+				".json", TEncoding::UTF8));
+
+			DestFileStream->Write(o->ToString());
+			DestFileStream->Close();
+		}
+
 		ExcelApp1 = CreateOleObject("Excel.Application");
 		ExcelApp1.OlePropertySet("Visible", true);
 		ExcelBooks1 = ExcelApp1.OlePropertyGet("Workbooks"); // Open Excel File.
@@ -637,55 +640,6 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 					WideString(names.at(o + i * 8)));
 			}
 		}
-
-
-		/*
-		ExcelSheet1 = Sheets1.OlePropertyGet("Item", 5);
-		ExcelSheet1.OlePropertySet("Name", WideString("Редукторы"));
-		ExcelSheet1.OleProcedure("Activate");
-		vCells1 = ExcelSheet1.OlePropertyGet("Cells");
-
-		vCells1.OlePropertyGet("Item", 2, 1).OlePropertySet("Value",
-			WideString("Вал выходной"));
-		Variant cellRange = ExcelSheet1.OlePropertyGet("Range",WideString("A3:A4"));
-		cellRange.OleProcedure("Merge");
-		cellRange.OlePropertySet("Value", WideString("Блок шестерен 017"));
-		cellRange = ExcelSheet1.OlePropertyGet("Range",WideString("A5:A6"));
-		cellRange.OleProcedure("Merge");
-		cellRange.OlePropertySet("Value", WideString("Блок шестерен 016"));
-		cellRange = ExcelSheet1.OlePropertyGet("Range",WideString("A7:A8"));
-		cellRange.OleProcedure("Merge");
-		cellRange.OlePropertySet("Value", WideString("Блок шестерен 015"));
-		vCells1.OlePropertyGet("Item", 9, 1).OlePropertySet("Value",
-			WideString("Ведущая шестерня"));
-
-		vCells1.OlePropertyGet("Item", 2, 2).OlePropertySet("Value",
-			WideString(gears_id[7]));
-		vCells1.OlePropertyGet("Item", 3, 2).OlePropertySet("Value",
-			WideString(gears_id[6]));
-		vCells1.OlePropertyGet("Item", 4, 2).OlePropertySet("Value",
-			WideString(gears_id[5]));
-		vCells1.OlePropertyGet("Item", 5, 2).OlePropertySet("Value",
-			WideString(gears_id[4]));
-		vCells1.OlePropertyGet("Item", 6, 2).OlePropertySet("Value",
-			WideString(gears_id[3]));
-		vCells1.OlePropertyGet("Item", 7, 2).OlePropertySet("Value",
-			WideString(gears_id[2]));
-		vCells1.OlePropertyGet("Item", 8, 2).OlePropertySet("Value",
-			WideString(gears_id[1]));
-		vCells1.OlePropertyGet("Item", 9, 2).OlePropertySet("Value",
-			WideString(gears_id[0]));
-		for (int i = 0; i < names.size() / 8; i++) {
-			vCells1.OlePropertyGet("Item", 1, i+3).OlePropertySet("Value",
-				WideString(Format("Редуктор %d", i+1)));
-			for (int o = 7; o > -1; o--) {
-				vCells1.OlePropertyGet("Item", abs(o - 7) + 2, i+3).OlePropertySet("Value",
-					WideString(names.at(o + i*8)));
-			}
-		}
-		vCells1.OlePropertySet("ColumnWidth", 30);
-		*/
-
 	}
 	int minCol = 1000;
 	int minNum = 0;
