@@ -94,6 +94,7 @@ TJSONArray *Gearboxes = new TJSONArray();
 void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 	TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo) {
 	ExcelApp = CreateOleObject("Excel.Application");
+	ExcelApp.OlePropertySet("DisplayAlerts", 0);
 
 	try {
 		ExcelApp.OlePropertySet("Visible", false); // setup Show Excel.
@@ -176,7 +177,7 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 	catch (Exception &E) {
 		memoLog->Lines->Add(Format("Cant open file: %s", WideString(FileName)));
 	}
-	ExcelBook.OleProcedure("Close");
+	ExcelBook.OleProcedure("Close", false);
 	ExcelApp.OleProcedure("Quit");
 }
 
