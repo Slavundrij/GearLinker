@@ -242,3 +242,10 @@ enum typeJoint TAxis::eGetJoint2(TGear* _Gear) {
 	}
 }
 
+TBuild::TBuild(TGear* wheel, TGear* gear) {
+	Wheel = wheel;
+	Gear = gear;
+}
+
+TBuild::~TBuild() {
+}

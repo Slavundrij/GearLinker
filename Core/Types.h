@@ -75,6 +75,17 @@ public:
 private:
 };
 
+class TBuild {
+	public:
+		TBuild(TGear* wheel, TGear* gear);
+		~TBuild();
+
+		TGear* Wheel;
+		TGear* Gear;
+
+	private:
+};
+
 class TGearing {
 public:
 	TGearing(TGear* gear1, TGear* gear2);

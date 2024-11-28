@@ -38,9 +38,9 @@ public:
 private:
 };
 
-void BuildGearboxes(TList* suspGearList, TList* stanGearList, TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList, TFileList* FileList, TMemo* memoRes);
+void BuildGearboxes(TList* suspGearList, TList* stanGearList, TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList, TFileList* FileList, TMemo* memoRes, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3);
 
-void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList, TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo);
+void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList, TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3);
 void getFilledMeasurementRows(unsigned int rowCnt, unsigned int Col,
 	vector<unsigned int>* measurements);
 int fillGearMeasurments(vector<unsigned int>* measurements, TGear* Gear,
@@ -53,7 +53,7 @@ void buildGoodGearboxes(TList* goodList);
 bool findGear(TList* goodList, UnicodeString desig, vector<TGear*>* gears);
 
 bool findSpecialGear(TList* gearList, int number, vector<TGear*>* measurements, TMemo* memoLog);
-void buildStandartGearboxes(TList* stanList, TList* UsedGearList, TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes);
+void buildStandartGearboxes(TList* stanList, TList* UsedGearList, TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3);
 
 double diameter(TGear* gear, TMemo* memoLog);
 

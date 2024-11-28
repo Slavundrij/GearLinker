@@ -2,8 +2,8 @@ object FormAddDataFiles: TFormAddDataFiles
   Left = 0
   Top = 0
   Caption = #1055#1086#1076#1073#1086#1088
-  ClientHeight = 619
-  ClientWidth = 1076
+  ClientHeight = 620
+  ClientWidth = 1080
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

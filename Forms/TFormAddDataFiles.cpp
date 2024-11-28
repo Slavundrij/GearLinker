@@ -18,6 +18,9 @@ TList* SuspGearList;
 TList* StanGearList;
 TList* GoodGearList;
 TList* UsedGearList;
+TList* BuildedGearsList1;
+TList* BuildedGearsList2;
+TList* BuildedGearsList3;
 
 // ---------------------------------------------------------------------------
 __fastcall TFormAddDataFiles::TFormAddDataFiles(TComponent* Owner)
@@ -55,6 +58,9 @@ void __fastcall TFormAddDataFiles::btnLoadFilesClick(TObject *Sender) {
     StanGearList = new TList();
 	GoodGearList = new TList();
 	UsedGearList = new TList();
+	BuildedGearsList1 = new TList();
+	BuildedGearsList2 = new TList();
+	BuildedGearsList3 = new TList();
 	memLog->Clear();
 	memInfo->Clear();
 	vector<AnsiString> Repeats = {};
@@ -63,12 +69,12 @@ void __fastcall TFormAddDataFiles::btnLoadFilesClick(TObject *Sender) {
 		for (int i = 0; i < FileList->iGetCountFiles(); i++) {
 			if (find(begin(Repeats), end(Repeats), FileList->sGetFile(i)) == end(Repeats)) {
 				Repeats.push_back(FileList->sGetFile(i));
-                vLoadGearsFromExcel(SuspGearList, StanGearList, GoodGearList, FileList->sGetFile(i), memLog, memInfo);
+				vLoadGearsFromExcel(SuspGearList, StanGearList, GoodGearList, FileList->sGetFile(i), memLog, memInfo, BuildedGearsList1, BuildedGearsList2, BuildedGearsList3);
 			}
 			FormAddDataFiles->ProgressSet(i + 1, FileList->iGetCountFiles());
 		}
 		Form1->Memo1->Clear();
-		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList, Form1->Memo1);
+		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList, Form1->Memo1, BuildedGearsList1, BuildedGearsList2, BuildedGearsList3);
 		Form1->Show();
 		FormAddDataFiles->ProgressReset();
 	}

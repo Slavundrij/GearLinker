@@ -89,7 +89,7 @@ Variant ExcelApp1, ExcelBooks1, Book1, Sheets1, ExcelApp, ExcelBooks, ExcelBook,
 	ExcelSheet;
 
 void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
-	TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo) {
+	TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3) {
 	ExcelApp = CreateOleObject("Excel.Application");
 	ExcelApp.OlePropertySet("DisplayAlerts", 0);
 
@@ -107,69 +107,149 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 		int iColsCount = ExcelApp.OlePropertyGet("ActiveSheet").OlePropertyGet
 			("UsedRange").OlePropertyGet("Columns").OlePropertyGet("Count");
 
-		// First of all we parse PGTS////////////////////////////////////////////
 		Variant vCells = ExcelSheet.OlePropertyGet("Cells");
-		AnsiString detailNum = vCells.OlePropertyGet("Item", 5, 3);
-		TDesignation PGTS(detailNum);
-		////////////////////////////////////////////////////////////////////////
 
-		// Secondly suggesting to start with order № since its common for this///
-		// sheet/////////////////////////////////////////////////////////////////
-		AnsiString sOrderNum = vCells.OlePropertyGet("Item", 3, 3);
-		unsigned int orderNum = 0;
-		try {
-			orderNum = sOrderNum.ToInt();
-		} catch (...) {
-		}
+		//is builded or not
 		UnicodeString sGearName = vCells.OlePropertyGet("Item", 3, 12);
-		sGearName = correctName(sGearName);
-		////////////////////////////////////////////////////////////////////////
 
-		// Finally we come to gears characteristics & gears themselves///////////     "ПГТС.721164.006"
-		vector<unsigned int>filledMeasuarments;
+		if (sGearName == "БЛОК ШЕСТЕРЕН") {
+			//Wheel
+			UnicodeString buildNumber = vCells.OlePropertyGet("Item", 5, 3);
+			AnsiString wheelNum = vCells.OlePropertyGet("Item", 18, 3);
+			AnsiString gearNum = vCells.OlePropertyGet("Item", 27, 3);
+			TDesignation gearPGTS(gearNum);
+			TDesignation wheelPGTS(wheelNum);
+			AnsiString sOrderNum = vCells.OlePropertyGet("Item", 3, 3);
+            unsigned int orderNum = 0;
+			try {
+				orderNum = sOrderNum.ToInt();
+			} catch (...) {
+			}
+			vector<unsigned int>filledWheelMeasuarments = {19, 20, 21, 22};
+			vector<unsigned int>filledGearMeasuarments = {28, 29, 30, 31};
+			int buildquantity = 0;
+			for (int i = 15; i < iColsCount; i++) {
+				UnicodeString wheelNumber = vCells.OlePropertyGet("Item", 9, i);
+				UnicodeString gearNumber = vCells.OlePropertyGet("Item", 25, i);
 
-		getFilledMeasurementRows(iRowsCount, 2, &filledMeasuarments);
+				int whealColor = vCells.OlePropertyGet("Item", 9, i).OlePropertyGet
+					("Interior").OlePropertyGet("ColorIndex");
+				int gearColor = vCells.OlePropertyGet("Item", 25, i).OlePropertyGet
+					("Interior").OlePropertyGet("ColorIndex");
+				if (isCellFilled(whealColor) && whealColor != 6 && isCellFilled(gearNumber) && gearColor != 6) {
+					TGear* newWheal = new TGear(wheelPGTS, orderNum, sGearName,
+					wheelNumber);
+					TGear* newGear = new TGear(gearPGTS, orderNum, sGearName,
+					gearNumber);
 
-		int quantity = 0;
-
-		// All gears in sheet cycle
-		for (int i = 15; i < iColsCount; i++) {
-			UnicodeString gearNumber = vCells.OlePropertyGet("Item", 9, i);
-			int color = vCells.OlePropertyGet("Item", 9, i).OlePropertyGet
-				("Interior").OlePropertyGet("ColorIndex");
-			// && color != 6
-			if (isCellFilled(gearNumber) && color != 6) {
-				TGear* newGear = new TGear(PGTS, orderNum, sGearName,
-				gearNumber);
-				newGear->parentFile = parseFileName(FileName);
-				TList* listparams = new TList();
-				// fun for taking all measurements
-				//fillGearMeasurments(&filledMeasuarments, listparams, i);
-				//newGear->listParams = listparams;
-				switch (fillGearMeasurments(&filledMeasuarments, newGear, listparams, i)) {
-				case 0:
-					newGear->listParams = listparams;
-					suspGearList->Add(newGear);
-					break;
-				case 1:
-					newGear->listParams = listparams;
-					quantity++;
-					stanGearList->Add(newGear);
-					break;
-				case 2:
-					newGear->listParams = listparams;
-					goodGearList->Add(newGear);
-					break;
-				default:
-					break;
+					newGear->parentFile = parseFileName(FileName);
+					newWheal->parentFile = parseFileName(FileName);
+					TList* wheelListparams = new TList();
+					TList* gearListparams = new TList();
+					// fun for taking all measurements
+					int w = fillGearMeasurments(&filledWheelMeasuarments, newWheal, wheelListparams, i);
+					int g = fillGearMeasurments(&filledGearMeasuarments, newGear, gearListparams, i);
+					if (w == 1 && g == 1) {
+						buildquantity++;
+						newWheal->listParams = wheelListparams;
+						newGear->listParams = gearListparams;
+						TBuild* newBuild = new TBuild(newWheal, newGear);
+						if (newWheal->Desgination.getStringDesignation() == "ПГТС.721134.014") {
+							BuildedGearsList3->Add(newBuild);
+						} else if (newWheal->Desgination.getStringDesignation() == "ПГТС.721134.016") {
+							BuildedGearsList2->Add(newBuild);
+						} else if (newWheal->Desgination.getStringDesignation() == "ПГТС.721134.015") {
+							BuildedGearsList1->Add(newBuild);
+                        }
+					} else {
+						delete newWheal;
+						delete newGear;
+                    }
+					/*
+					switch (fillGearMeasurments(&filledMeasuarments, newGear, listparams, i)) {
+						case 0:
+							newGear->listParams = listparams;
+							suspGearList->Add(newGear);
+							break;
+						case 1:
+							newGear->listParams = listparams;
+							quantity++;
+							stanGearList->Add(newGear);
+							break;
+						case 2:
+							newGear->listParams = listparams;
+							goodGearList->Add(newGear);
+							break;
+						default:
+							break;
+					}
+					*/
 				}
 			}
-		}
-		// FormAddDataFiles->ProgressReset();
-		memoInfo->Lines->Add(Format("Найдено %d деталей %s", quantity,
-			PGTS.getStringDesignation()));
+			memoInfo->Lines->Add(Format("Найдено %d подсборок %s", buildquantity,
+				buildNumber));
 
-		// progressbar.clear
+		} else {
+			// First of all we parse PGTS////////////////////////////////////////////
+			AnsiString detailNum = vCells.OlePropertyGet("Item", 5, 3);
+			TDesignation PGTS(detailNum);
+			////////////////////////////////////////////////////////////////////////
+
+			// Secondly suggesting to start with order № since its common for this///
+			// sheet/////////////////////////////////////////////////////////////////
+			AnsiString sOrderNum = vCells.OlePropertyGet("Item", 3, 3);
+			unsigned int orderNum = 0;
+			try {
+				orderNum = sOrderNum.ToInt();
+			} catch (...) {
+			}
+			//UnicodeString sGearName = vCells.OlePropertyGet("Item", 3, 12);
+			sGearName = correctName(sGearName);
+			////////////////////////////////////////////////////////////////////////
+
+			// Finally we come to gears characteristics & gears themselves///////////     "ПГТС.721164.006"
+			vector<unsigned int>filledMeasuarments;
+
+			getFilledMeasurementRows(iRowsCount, 2, &filledMeasuarments);
+
+			int quantity = 0;
+
+			// All gears in sheet cycle
+			for (int i = 15; i < iColsCount; i++) {
+				UnicodeString gearNumber = vCells.OlePropertyGet("Item", 9, i);
+				int color = vCells.OlePropertyGet("Item", 9, i).OlePropertyGet
+					("Interior").OlePropertyGet("ColorIndex");
+				// && color != 6
+				if (isCellFilled(gearNumber) && color != 6) {
+					TGear* newGear = new TGear(PGTS, orderNum, sGearName,
+					gearNumber);
+					newGear->parentFile = parseFileName(FileName);
+					TList* listparams = new TList();
+					// fun for taking all measurements
+					//fillGearMeasurments(&filledMeasuarments, listparams, i);
+					//newGear->listParams = listparams;
+					switch (fillGearMeasurments(&filledMeasuarments, newGear, listparams, i)) {
+					case 0:
+						newGear->listParams = listparams;
+						suspGearList->Add(newGear);
+						break;
+					case 1:
+						newGear->listParams = listparams;
+						quantity++;
+						stanGearList->Add(newGear);
+						break;
+					case 2:
+						newGear->listParams = listparams;
+						goodGearList->Add(newGear);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+            memoInfo->Lines->Add(Format("Найдено %d деталей %s", quantity,
+				PGTS.getStringDesignation()));
+		}
 	}
 	catch (Exception &E) {
 		memoLog->Lines->Add(Format("Cant open file: %s", WideString(FileName)));
@@ -180,7 +260,7 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 
 void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 	TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList,
-	TFileList* FileList, TMemo* memoRes) {
+	TFileList* FileList, TMemo* memoRes, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3) {
 
 	memoInfo->Lines->Add("--------------------------------------------");
 	memoInfo->Lines->Add("Расчет соединений...");
@@ -190,7 +270,7 @@ void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 	memoInfo->Lines->Add("--------------------------------------------");
 
 	// buildGoodGearboxes(goodGearList);
-	buildStandartGearboxes(stanGearList, UsedGearList, memoLog, memoInfo, memoRes);
+	buildStandartGearboxes(stanGearList, UsedGearList, memoLog, memoInfo, memoRes, BuildedGearsList1, BuildedGearsList2, BuildedGearsList3);
 
 	memoInfo->Lines->Add("--------------------------------------------");
 	memoInfo->Lines->Add("Закраска использованных деталей...");
@@ -202,6 +282,9 @@ void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 	delete UsedGearList;
 	delete goodGearList;
 	delete suspGearList;
+	delete BuildedGearsList1;
+	delete BuildedGearsList2;
+	delete BuildedGearsList3;
 	memoInfo->Lines->Add("Готово!");
 }
 
@@ -298,6 +381,7 @@ int gearInList(TList* stanList, int num) {
 	return -1;
 }
 
+/*
 void findAllPairs(TList* gearList, TGear* Gear, TList* FindMatches, int num, TMemo* memoLog) {
 	int m = gearWheel(num);
 	TList* Gear_Wheel = new TList();
@@ -322,8 +406,9 @@ void findAllPairs(TList* gearList, TGear* Gear, TList* FindMatches, int num, TMe
 	}
 	else {
 		delete Gear_Wheel;
-    }
+	}
 }
+*/
 
 possiblePair* findWorstPair(TList* _FindMatches, TMemo* _memoLog) {
 	int min = 1000;
@@ -377,8 +462,112 @@ void clearAllRepeats(TList* FindMatches, UnicodeString wNum, TMemo* memoInfo) {
     }
 }
 
+void findAllPairs(TList* gearList, TGear* Wheel, TList* FindMatches, int num, TMemo* memoLog) {
+	for (int j = 0; j < gearList->Count; j++) {
+		TGear* Gear = (TGear*)gearList->Items[j];
+		if (Gear->Desgination.getStringDesignation() == gears_id[num]) {
+			double tolerance = calculateTolerance(Gear, Wheel, num, memoLog);
+			double D = diameter(Wheel, memoLog);
+			if (D <= tolerance && D >= tolerance - Wheel->extTol) {
+				possiblePair* Pair = new possiblePair();
+				Pair->Gear1 = Gear;
+				Pair->Gear2 = Wheel;
+				Pair->wNum = Wheel->sNumber;
+				Pair->criteria = D - (tolerance - Wheel->extTol);
+				FindMatches->Add(Pair);
+				memoLog->Lines->Add(Format("Найдено зацепление %s+%s", Gear->sNumber, Wheel->sNumber));
+			}
+		}
+	}
+}
+
+void findAllPairs1(TList* gearList, TGear* Gear, TList* FindMatches, int num, TMemo* memoLog) {
+	for (int j = 0; j < gearList->Count; j++) {
+		TGear* Wheel = (TGear*)gearList->Items[j];
+		if (Wheel->Desgination.getStringDesignation() == gears_id[num]) {
+			double tolerance = calculateTolerance(Gear, Wheel, num-1, memoLog);
+			double D = diameter(Wheel, memoLog);
+			if (D <= tolerance && D >= tolerance - Wheel->extTol) {
+				possiblePair* Pair = new possiblePair();
+				Pair->Gear1 = Gear;
+				Pair->Gear2 = Wheel;
+				Pair->wNum = Wheel->sNumber;
+				Pair->criteria = D - (tolerance - Wheel->extTol);
+				FindMatches->Add(Pair);
+				memoLog->Lines->Add(Format("Найдено зацепление %s+%s", Gear->sNumber, Wheel->sNumber));
+			}
+		}
+	}
+}
+
+int findOnePair(TGear* Gear, TGear* Wheel, int numOfGear, TMemo* memoLog) {
+	double tolerance = calculateTolerance(Gear, Wheel, numOfGear, memoLog);
+	double D = diameter(Wheel, memoLog);
+	if (D <= tolerance && D >= tolerance - Wheel->extTol) {
+		return 1;
+	} else {
+		return 0;
+    }
+}
+
+void continuousSearch(TList* stanList, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3, TList* allFinded, TMemo* memoLog) {
+	TList* FindMatches1 = new TList();
+	TBuild* build1 = (TBuild*)BuildedGearsList1->Items[0];
+	TGear* Wheel1 = build1->Wheel;
+	TGear* Gear1 = build1->Gear;
+	findAllPairs(stanList, Wheel1, FindMatches1, 0, memoLog);
+	if (FindMatches1->Count == 0) {
+		BuildedGearsList1->Remove(build1);
+		delete FindMatches1;
+		return;
+	} else {
+		for (int i = 0; i < BuildedGearsList2->Count; i++) {
+			TBuild* build2 = (TBuild*)BuildedGearsList2->Items[i];
+			TGear* Wheel2 = build2->Wheel;
+			TGear* Gear2 = build2->Gear;
+			if (findOnePair(Gear1, Wheel2, 2, memoLog) == 1) {
+				for (int j = 0; j < BuildedGearsList3->Count; j++) {
+					TBuild* build3 = (TBuild*)BuildedGearsList3->Items[j];
+					TGear* Wheel3 = build3->Wheel;
+					TGear* Gear3 = build3->Gear;
+					if (findOnePair(Gear2, Wheel3, 4, memoLog) == 1) {
+						TList* FindMatches2 = new TList();
+						findAllPairs1(stanList, Gear3, FindMatches2, 7, memoLog);
+						if(FindMatches2->Count == 1) {
+							possiblePair* Pair1 = (possiblePair*)FindMatches1->Items[0];
+							TGear* Gear = Pair1->Gear1;
+							possiblePair* Pair2 = (possiblePair*)FindMatches2->Items[0];
+							TGear* Wheel = Pair2->Gear2;
+							allFinded->Add(Gear);
+							allFinded->Add(Wheel1);
+							allFinded->Add(Gear1);
+							allFinded->Add(Wheel2);
+							allFinded->Add(Gear2);
+							allFinded->Add(Wheel3);
+							allFinded->Add(Gear3);
+							allFinded->Add(Wheel);
+							delete FindMatches1;
+							delete FindMatches2;
+							stanList->Remove(Gear);
+							stanList->Remove(Wheel);
+							BuildedGearsList1->Remove(build1);
+							BuildedGearsList2->Remove(build2);
+							BuildedGearsList3->Remove(build3);
+							return;
+						}
+						delete FindMatches2;
+					}
+				}
+			}
+		}
+	}
+    BuildedGearsList1->Remove(build1);
+	delete FindMatches1;
+	return;
+}
+
 void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
-	TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes) {
+	TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes, TList* BuildedGearsList1, TList* BuildedGearsList2, TList* BuildedGearsList3) {
 	vector<UnicodeString>names;
 	vector<TGear*>Gears_and_Wheels_1;
 	vector<TGear*>Gears_and_Wheels_2;
@@ -387,47 +576,39 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 	int gearingN[4] = {0, };
 	int gearboxN = 0;
 
-	TList* FindMatches = new TList();
+	TList* allFinded = new TList();
 
-	int gearPos = 0;
-	for (int i = 0; i < gears_id.size() / 2; i++) {
-		FindMatches->Clear();
-		while (1) {
-			gearPos = gearInList(stanList, i * 2);
-			if (gearPos == -1) {
-				break;
-			}
-			else {
-				TGear* Gear = (TGear*)stanList->Items[gearPos];
-				stanList->Remove(Gear);
-				findAllPairs(stanList, Gear, FindMatches, i * 2, memoLog);
-			}
-		}
-		while (FindMatches->Count != 0) {
-			possiblePair* worstPair = findWorstPair(FindMatches, memoLog);
-			TGear* Gear = worstPair->Gear1;
-			TGear* Wheel = worstPair->Gear2;
-            if (i == 0) {
-				Gears_and_Wheels_1.push_back(Gear);
-				Gears_and_Wheels_1.push_back(Wheel);
-			} else if (i == 1) {
-				Gears_and_Wheels_2.push_back(Gear);
-				Gears_and_Wheels_2.push_back(Wheel);
-			} else if (i == 2) {
-				Gears_and_Wheels_3.push_back(Gear);
-				Gears_and_Wheels_3.push_back(Wheel);
-			} else if (i == 3) {
-				Gears_and_Wheels_4.push_back(Gear);
-				Gears_and_Wheels_4.push_back(Wheel);
-			}
-			//memoInfo->Lines->Add(Format("Найдено зацепление %s+%s", Gear->sNumber, Wheel->sNumber));
-			gearingN[i]++;
-		}
+	while (BuildedGearsList1->Count != 0) {
+		continuousSearch(stanList, BuildedGearsList1, BuildedGearsList2, BuildedGearsList3, allFinded, memoLog);
 	}
-    for (int i = 0; i < 4; i++) {
-		memoInfo->Lines->Add(Format("Найдено зацеплений %s+%s: %d",
-		gears_id[i*2], gears_id[i*2 + 1], gearingN[i]));
+
+	while (allFinded->Count != 0) {
+			TGear* Gear1 = (TGear*)allFinded->Items[0];
+			TGear* Wheel1 = (TGear*)allFinded->Items[1];
+			TGear* Gear2 = (TGear*)allFinded->Items[2];
+			TGear* Wheel2 = (TGear*)allFinded->Items[3];
+			TGear* Gear3 = (TGear*)allFinded->Items[4];
+			TGear* Wheel3 = (TGear*)allFinded->Items[5];
+			TGear* Gear4 = (TGear*)allFinded->Items[6];
+			TGear* Wheel4 = (TGear*)allFinded->Items[7];
+			Gears_and_Wheels_1.push_back(Gear1);
+			Gears_and_Wheels_1.push_back(Wheel1);
+			Gears_and_Wheels_2.push_back(Gear2);
+			Gears_and_Wheels_2.push_back(Wheel2);
+			Gears_and_Wheels_3.push_back(Gear3);
+			Gears_and_Wheels_3.push_back(Wheel3);
+			Gears_and_Wheels_4.push_back(Gear4);
+			Gears_and_Wheels_4.push_back(Wheel4);
+			allFinded->Remove(Gear1);
+			allFinded->Remove(Wheel1);
+			allFinded->Remove(Gear2);
+			allFinded->Remove(Wheel2);
+			allFinded->Remove(Gear3);
+			allFinded->Remove(Wheel3);
+			allFinded->Remove(Gear4);
+			allFinded->Remove(Wheel4);
 	}
+	delete allFinded;
 
 	if(Gears_and_Wheels_1.size() != 0 && Gears_and_Wheels_2.size() != 0 &&
 		   Gears_and_Wheels_3.size() != 0 && Gears_and_Wheels_4.size() != 0)
@@ -641,23 +822,6 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 			}
 		}
 	}
-	int minCol = 1000;
-	int minNum = 0;
-	for (int i = 0; i < 4; i++) {
-		if (minCol > gearingN[i]) {
-			minCol = gearingN[i];
-			minNum = i*2;
-		}
-	}
-	int secMinCol = 1000;
-	for (int j = 0; j < 4; j++) {
-		if (minCol != gearingN[j]) {
-			if (secMinCol > gearingN[j]) {
-				secMinCol = gearingN[j];
-			}
-		}
-	}
-	memoRes->Lines->Add(Format("Для дальнейшей сборки редукторов не хватает %d деталей %s и %s", secMinCol - minCol, gears_id[minNum], gears_id[minNum+1]));
 	memoInfo->Lines->Add(Format("Собрано редукторов: %d", gearboxN));
 	return;
 }
