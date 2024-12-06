@@ -18,31 +18,36 @@
 
 double CtR = M_PI / 180;
 
-vector<double>PGTS44_07 = {0.093-0.034, 0.093 - 0.035, 0.089 - 0.033};
-vector<double>PGTS34_15 = {0.148-0.072, 0.15 - 0.073, 0.141 - 0.07};
-vector<double>PGTS64_05 = {0.081-0.038, 0.082 - 0.038, 0.077 - 0.036};
-vector<double>PGTS34_16 = {0.141-0.069, 0.142 - 0.07, 0.137 - 0.067};
-vector<double>PGTS64_06 = {0.079-0.034, 0.08 - 0.035, 0.076 - 0.033};
-vector<double>PGTS34_14 = {0.139-0.072, 0.14 - 0.073, 0.135 - 0.07};
-
-vector<double>PGTS44_07_nom = {9.822, 9.793, 10.035};
-vector<double>PGTS34_15_nom = {36.445, 36.409, 36.715};
-vector<double>PGTS64_05_nom = {11.099, 11.068, 11.325};
-vector<double>PGTS34_16_nom = {35.203, 35.168, 35.463};
-vector<double>PGTS64_06_nom = {9.822, 9.793, 10.035};
-vector<double>PGTS34_14_nom = {36.445, 36.409, 36.715};
-
-vector<double>PGTS64_07 = {0.066 - 0.039};
-vector<double>PGTS24_06 = {0.119 - 0.079};
-vector<double>Dr = {1, 0.99, 1.074, 1.5};
-
-vector<double>M = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.8, 0.8};
-vector<int>N = {16, 70, 19, 67, 16, 70, 14, 50};
-vector<double>Of = {0.022, 0.032, 0.022, 0.032, 0.022, 0.032, 0.022, 0.032};
-
-vector<UnicodeString>gears_id = {
-	"ПГТС.721144.007", "ПГТС.721134.015", "ПГТС.721164.005", "ПГТС.721134.016",
-	"ПГТС.721164.006", "ПГТС.721134.014", "ПГТС.721164.007", "ПГТС.721124.006"};
+map<UnicodeString, map<double, pair<double, double>>> RollerSizes = {
+	{
+		gears_id[0], { {9.822, pair(0.059, 1)}, {9.793, pair(0.058, 0.99)}, {10.035, pair(0.056, 1.074)} }
+	},
+	{
+		gears_id[1], { {36.445, pair(0.076, 1)}, {36.409, pair(0.077, 0.99)}, {36.715, pair(0.071, 1.074)} }
+	},
+	{
+		gears_id[2], { {11.099, pair(0.043, 1)}, {11.068, pair(0.044, 0.99)}, {11.325, pair(0.041, 1.074)} }
+	},
+	{
+		gears_id[3], { {35.203, pair(0.072, 1)}, {35.168, pair(0.072, 0.99)}, {35.463, pair(0.07, 1.074)} }
+	},
+	{
+		gears_id[4], { {9.822, pair(0.045, 1)}, {9.793, pair(0.045, 0.99)}, {10.035, pair(0.043, 1.074)} }
+	},
+	{
+		gears_id[5], { {36.445, pair(0.067, 1)}, {36.409, pair(0.067, 0.99)}, {36.715, pair(0.065, 1.074)} }
+	},
+	{
+		gears_id[6], { {13.799, pair(0.027, 1.5)} }
+	},
+	{
+		gears_id[7], { {41.936, pair(0.04, 1.5)} }
+	}
+};
+vector<double> M = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.8, 0.8};
+vector<int> N = {16, 70, 19, 67, 16, 70, 14, 50};
+vector<double>Of = {0.022, 0.032, 0.022, 0.032, 0.02, 0.03, 0.01, 0.01};
+UnicodeString baseMeasure = "9.6.1.";
 
 TFileList::TFileList() {
 	pFileNames = new TStringList();
@@ -80,7 +85,6 @@ void TFileList::vShowFilesListBox(TListBox* lsb) {
 	for (int i = 0; i < pFileNames->Count; i++) {
 		lsb->Items->Add(pFileNames->Strings[i]);
 	}
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -392,6 +396,11 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 	int gearPos = 0;
 	for (int i = 0; i < gears_id.size() / 2; i++) {
 		FindMatches->Clear();
+        memoLog->Lines->Add("++++++++++++++++++");
+		memoLog->Lines->Add("");
+		memoLog->Lines->Add(Format("Далее идут все найденные зацепления %s+%s", gears_id[i*2], gears_id[i*2+1]));
+		memoLog->Lines->Add("");
+		memoLog->Lines->Add("++++++++++++++++++");
 		while (1) {
 			gearPos = gearInList(stanList, i * 2);
 			if (gearPos == -1) {
@@ -403,6 +412,11 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 				findAllPairs(stanList, Gear, FindMatches, i * 2, memoLog);
 			}
 		}
+		memoLog->Lines->Add("++++++++++++++++++");
+		memoLog->Lines->Add("");
+		memoLog->Lines->Add(Format("Далее идут сборки по критерию %s+%s", gears_id[i*2], gears_id[i*2+1]));
+		memoLog->Lines->Add("");
+		memoLog->Lines->Add("++++++++++++++++++");
 		while (FindMatches->Count != 0) {
 			possiblePair* worstPair = findWorstPair(FindMatches, memoLog);
 			TGear* Gear = worstPair->Gear1;
@@ -420,7 +434,7 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 				Gears_and_Wheels_4.push_back(Gear);
 				Gears_and_Wheels_4.push_back(Wheel);
 			}
-			//memoInfo->Lines->Add(Format("Найдено зацепление %s+%s", Gear->sNumber, Wheel->sNumber));
+			memoLog->Lines->Add(Format("Найдено зацепление %s+%s", Gear->sNumber, Wheel->sNumber));
 			gearingN[i]++;
 		}
 	}
@@ -641,7 +655,7 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 			}
 		}
 	}
-	int minCol = 1000;
+	int minCol = 30;
 	int minNum = 0;
 	for (int i = 0; i < 4; i++) {
 		if (minCol > gearingN[i]) {
@@ -649,7 +663,7 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 			minNum = i*2;
 		}
 	}
-	int secMinCol = 1000;
+	int secMinCol = 30;
 	for (int j = 0; j < 4; j++) {
 		if (minCol != gearingN[j]) {
 			if (secMinCol > gearingN[j]) {
@@ -665,7 +679,7 @@ void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
 double diameter(TGear* gear, TMemo* memoLog) {
 	for (int i = 0; i < gear->listParams->Count; i++) {
 		stMeasurement* st = (stMeasurement*)gear->listParams->Items[i];
-		if (st->sKeyMeasure == "9.6.1.") {
+		if (st->sKeyMeasure == baseMeasure) {
 			return st->fMeasure;
 		}
 	}
@@ -690,15 +704,13 @@ void getFilledMeasurementRows(unsigned int rowCnt, unsigned int Col,
 
 	try {
 		Variant MYCells = ExcelApp.OlePropertyGet("Cells");
-		bool firstControl = true;
 		for (unsigned int i = 1; i < rowCnt; i++) {
 			UnicodeString currStr = MYCells.OlePropertyGet("Item", i, Col);
 			if(cellIsMeasure(currStr)) {
 				measurements->push_back(i);
 			}
-			if (currStr == "Согласование отклонений" && firstControl) {
+			if (ContainsSubstring(currStr, "Окончательный контроль")) {
 				measurements->push_back(i+1);
-				firstControl = false;
 			}
 		}
 	}
@@ -719,8 +731,8 @@ int fillGearMeasurments(vector<unsigned int> * measurements, TGear* Gear, TList*
 				UnicodeString nameStr = MYCells.OlePropertyGet("Item",measurements->at(i), 2);
 				nameStr.Trim();
 				if (!cellIsMeasure(nameStr)) {
-					Measurment->sKeyMeasure = "Согласование отклонений";
-					(currStr == "NOK") ? Measurment->fMeasure = 0 : Measurment->fMeasure = 1;
+					Measurment->sKeyMeasure = "Окончательный контроль";
+					(currStr == "OK") ? Measurment->fMeasure = 1 : Measurment->fMeasure = 0;
 				}
 				else {
 					Measurment->sKeyMeasure = nameStr;
@@ -736,7 +748,16 @@ int fillGearMeasurments(vector<unsigned int> * measurements, TGear* Gear, TList*
 					} catch (...) {
 						Measurment->fNominalValue = 0;
 					}
-					if (Measurment->sKeyMeasure == "9.6.3.") {
+					if (Measurment->sKeyMeasure == baseMeasure) {
+						map<double, pair<double, double>> Nominal_to_all = RollerSizes[Gear->Desgination.getStringDesignation()];
+						if (Nominal_to_all.find(Measurment->fNominalValue) != Nominal_to_all.end()) {
+							Gear->extTol = Nominal_to_all[Measurment->fNominalValue].first;
+							Gear->rollerD = Nominal_to_all[Measurment->fNominalValue].second;
+						} else {
+
+						}
+
+						/*
 						if (Gear->Desgination.getStringDesignation() == gears_id[0]) {
 							auto result = find(begin(PGTS44_07_nom), end(PGTS44_07_nom), Measurment->fNominalValue);
 							Gear->extTol = PGTS44_07[result - begin(PGTS44_07_nom)];
@@ -775,6 +796,7 @@ int fillGearMeasurments(vector<unsigned int> * measurements, TGear* Gear, TList*
 							Gear->extTol = PGTS24_06[0];
 							Gear->rollerD = Dr[3];
 						}
+                        */
                     }
 					currStr = MYCells.OlePropertyGet("Item",
 						measurements->at(i), 12);
@@ -793,7 +815,6 @@ int fillGearMeasurments(vector<unsigned int> * measurements, TGear* Gear, TList*
 				}
 				void *mrmt = Measurment;
 				listparams->Add(mrmt);
-				// delete Measurment;
 			}
 		}
 		return checkMasurementsData(listparams, Gear->Desgination.getStringDesignation());
@@ -864,28 +885,31 @@ int checkMasurementsData(TList* listparams, UnicodeString _PGTS) {
 	bool e_operator = true;
 	bool e_roller = true;
 	bool e_runout = true;
+	//if not exist, detail is suspicious
 	bool e_OK = true;
+    //if not exist, detail is suspicious
 	bool is_filled = false;
 	double runout = 0;
 	for (int i = 0; i < listparams->Count; i++) {
 		stMeasurement* Measurment = (stMeasurement*)listparams->Items[i];
 		if (Measurment->sKeyMeasure == "9.6.1.") {
 			e_controller = measureInLimits(Measurment);
-			is_filled = true;
 		}
 		else if (Measurment->sKeyMeasure == "9.6.2.") {
 			e_operator = measureInLimits(Measurment);
 		}
 		else if (Measurment->sKeyMeasure == "9.6.3.") {
 			e_roller = measureInLimits(Measurment);
-			//is_filled = true;
 		}
 		else if (Measurment->sKeyMeasure == "9.9.") {
 			e_runout = measureInLimits(Measurment);
 			runout = Measurment->fMeasure;
 		}
-		else if (Measurment->sKeyMeasure == "Согласование отклонений") {
-			e_OK = !(Measurment->fMeasure == 0);
+		else if (Measurment->sKeyMeasure == "Окончательный контроль") {
+			e_OK = (Measurment->fMeasure == 1);
+		}
+		if (Measurment->sKeyMeasure == baseMeasure) {
+			is_filled = true;
 		}
 	}
 	if (!e_OK) {
@@ -936,6 +960,7 @@ bool isCellFilled(AnsiString cell) {
 		return false;
 	}
 }
+//---------------------------------------------------------------------------
 
 bool cellIsMeasure(UnicodeString str) {
 	if (str == "9.6.1." || str == "9.6.2." || str == "9.6.3." || str == "9.9.") {
@@ -944,6 +969,7 @@ bool cellIsMeasure(UnicodeString str) {
 		return false;
     }
 }
+//---------------------------------------------------------------------------
 
 UnicodeString correctName(UnicodeString ustr) {
 	AnsiString astr = ustr;
@@ -953,6 +979,7 @@ UnicodeString correctName(UnicodeString ustr) {
 	}
 	return str.c_str();
 }
+//---------------------------------------------------------------------------
 
 UnicodeString parseFileName(AnsiString _FileName) {
 	string sName = _FileName.c_str();
@@ -961,3 +988,9 @@ UnicodeString parseFileName(AnsiString _FileName) {
 	}
 	return sName.c_str();
 }
+//---------------------------------------------------------------------------
+
+bool ContainsSubstring(const UnicodeString& str, const UnicodeString& subStr) {
+	return Pos(subStr, str) > 0;
+}
+//---------------------------------------------------------------------------

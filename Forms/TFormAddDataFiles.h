@@ -15,7 +15,8 @@
 
 #include "TFileLoader.h"
 #include "Types.h"
-#include "Unit1.h"
+#include "TUserHintForm.h"
+#include "TFormManualParameters.h"
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.Dialogs.hpp>
 
@@ -44,7 +45,8 @@ __published:	// IDE-managed Components
     TMemo *memInfo;
     TImage *imgProgress;
 	TSaveDialog *SaveDialog1;
-	TButton *Button1;
+	TButton *AddAllFiles_btn;
+	TButton *ChangeNumbers_btn;
     void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
     void __fastcall lbxFileDblClick(TObject *Sender);
     void __fastcall lbxResultDblClick(TObject *Sender);
@@ -53,7 +55,8 @@ __published:	// IDE-managed Components
     void __fastcall CreateParams(Controls::TCreateParams &Params);
     void __fastcall FormResize(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
-	void __fastcall Button1Click(TObject *Sender);
+	void __fastcall AddAllFiles_btnClick(TObject *Sender);
+	void __fastcall ChangeNumbers_btnClick(TObject *Sender);
 
 
 private:	// User declarations

@@ -20,14 +20,14 @@ TList* GoodGearList;
 TList* UsedGearList;
 
 // ---------------------------------------------------------------------------
+
 __fastcall TFormAddDataFiles::TFormAddDataFiles(TComponent* Owner)
     : TForm(Owner) {
 }
-
 // ---------------------------------------------------------------------------
-void __fastcall TFormAddDataFiles::FormClose(TObject *Sender,
-    TCloseAction &Action)
 
+void __fastcall TFormAddDataFiles::FormClose(TObject *Sender,
+	TCloseAction &Action)
 {
     if (ResultForm == 0) {
         Application->Terminate();
@@ -44,6 +44,8 @@ void __fastcall TFormAddDataFiles::lbxFileDblClick(TObject *Sender) {
 // ---------------------------------------------------------------------------
 
 void __fastcall TFormAddDataFiles::lbxResultDblClick(TObject *Sender) {
+	UnicodeString _fileName = FileList->sGetFile(lbxResult->ItemIndex).SubString(lbxDir->Directory.Length() + 2, FileList->sGetFile(0).Length());
+	lbxFile->Items->Add(_fileName);
 	FileList->vDeleteFile(lbxResult->ItemIndex);
 	FileList->vShowFilesListBox(lbxResult);
 }
@@ -67,9 +69,9 @@ void __fastcall TFormAddDataFiles::btnLoadFilesClick(TObject *Sender) {
 			}
 			FormAddDataFiles->ProgressSet(i + 1, FileList->iGetCountFiles());
 		}
-		Form1->Memo1->Clear();
-		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList, Form1->Memo1);
-		Form1->Show();
+		UserHintForm->Memo1->Clear();
+		BuildGearboxes(SuspGearList, StanGearList, GoodGearList, memLog, memInfo, UsedGearList, FileList, UserHintForm->Memo1);
+		UserHintForm->Show();
 		FormAddDataFiles->ProgressReset();
 	}
     else {
@@ -78,6 +80,7 @@ void __fastcall TFormAddDataFiles::btnLoadFilesClick(TObject *Sender) {
 }
 
 // ---------------------------------------------------------------------------
+
 void __fastcall TFormAddDataFiles::btnSystemClick(TObject *Sender) {
 	memLog->Visible = !memLog->Visible;
 
@@ -96,6 +99,7 @@ void __fastcall TFormAddDataFiles::CreateParams(Controls::TCreateParams &Params)
     Params.ExStyle = Params.ExStyle | WS_EX_APPWINDOW;
     Params.WndParent = ParentWindow;
 }
+// ---------------------------------------------------------------------------
 
 /* */
 
@@ -156,6 +160,7 @@ void setSize(TControl* component, int _Width, int _Height) {
     setHeight(component, _Height);
 }
 /* ---- */
+// ---------------------------------------------------------------------------
 
 void __fastcall TFormAddDataFiles::FormResize(TObject *Sender) {
     //
@@ -180,7 +185,9 @@ void __fastcall TFormAddDataFiles::FormResize(TObject *Sender) {
 	setPosition(lbxFile, 110, cbxDrive->Left + cbxDrive->Width + 10);
 	setSize(lbxFile, 400, this->ClientHeight - 400);
 
-	setPosition(lbxResult, 110, lbxFile->Left + lbxFile->Width + 10);
+	setPosition(AddAllFiles_btn, lbxFile->Top + lbxFile->Height / 2 - AddAllFiles_btn->Height / 2, lbxFile->Left + lbxFile->Width + 10);
+
+	setPosition(lbxResult, 110, AddAllFiles_btn->Left + AddAllFiles_btn->Width + 10);
 	setSize(lbxResult, this->ClientWidth - lbxResult->Left - 10, this->ClientHeight - 400);
 
 	setPosition(memInfo, lbxFile->Top + lbxFile->Height + 10, cbxDrive->Left + cbxDrive->Width + 10);
@@ -199,26 +206,42 @@ void __fastcall TFormAddDataFiles::FormResize(TObject *Sender) {
 	setSize(btnSystem, this->ClientWidth - btnSystem->Left - 10, memLog->Height/2);
 
 	setPosition(btnLoadFiles, memInfo->Top, memInfo->Left + memInfo->Width + 10);
-	setSize(btnLoadFiles, this->ClientWidth - btnLoadFiles->Left - 10, memInfo->Height);
+	setSize(btnLoadFiles, this->ClientWidth - btnLoadFiles->Left - 10, memInfo->Height * 0.8);
+
+	setPosition(ChangeNumbers_btn, btnLoadFiles->Top + btnLoadFiles->Height + 10, btnLoadFiles->Left);
+	setSize(ChangeNumbers_btn, this->ClientWidth - btnLoadFiles->Left - 10, memInfo->Height - btnLoadFiles->Height - 10);
 }
 // ---------------------------------------------------------------------------
+
 void __fastcall TFormAddDataFiles::FormCreate(TObject *Sender)
 {
     FileList = new TFileList();
 }
 //---------------------------------------------------------------------------
 
-
-void __fastcall TFormAddDataFiles::Button1Click(TObject *Sender)
+void __fastcall TFormAddDataFiles::AddAllFiles_btnClick(TObject *Sender)
 {
-	while (lbxFile->Items->Count != 0) {
-        FileList->vAppendFile(lbxDir->Directory + "\\" +
-		lbxFile->Items->Strings[0]);
-		lbxFile->Items->Delete(0);
-		FileList->vShowFilesListBox(lbxResult);
+	if (lbxFile->Items->Count != 0) {
+		while (lbxFile->Items->Count != 0) {
+			FileList->vAppendFile(lbxDir->Directory + "\\" +
+			lbxFile->Items->Strings[0]);
+			lbxFile->Items->Delete(0);
+		}
+	} else if (FileList->iGetCountFiles() != 0) {
+		while (FileList->iGetCountFiles() != 0) {
+			UnicodeString _fileName = FileList->sGetFile(0).SubString(lbxDir->Directory.Length() + 2, FileList->sGetFile(0).Length());
+			lbxFile->Items->Add(_fileName);
+			FileList->vDeleteFile(0);
+		}
 	}
+	FileList->vShowFilesListBox(lbxResult);
 }
 //---------------------------------------------------------------------------
 
-
+void __fastcall TFormAddDataFiles::ChangeNumbers_btnClick(TObject *Sender)
+{
+	FormManualParameters->updateParamGrids();
+    FormManualParameters->Show();
+}
+//---------------------------------------------------------------------------
 

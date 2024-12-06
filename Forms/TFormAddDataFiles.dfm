@@ -84,10 +84,10 @@ object FormAddDataFiles: TFormAddDataFiles
     OnDblClick = lbxResultDblClick
   end
   object btnLoadFiles: TButton
-    Left = 990
-    Top = 530
+    Left = 988
+    Top = 531
     Width = 80
-    Height = 80
+    Height = 46
     Caption = #1057#1086#1073#1088#1072#1090#1100
     TabOrder = 4
     OnClick = btnLoadFilesClick
@@ -129,14 +129,23 @@ object FormAddDataFiles: TFormAddDataFiles
     ScrollBars = ssVertical
     TabOrder = 8
   end
-  object Button1: TButton
+  object AddAllFiles_btn: TButton
     Left = 446
     Top = 288
     Width = 41
     Height = 25
     Caption = #8633
     TabOrder = 9
-    OnClick = Button1Click
+    OnClick = AddAllFiles_btnClick
+  end
+  object ChangeNumbers_btn: TButton
+    Left = 988
+    Top = 583
+    Width = 80
+    Height = 28
+    Caption = #1048#1079#1084#1077#1085#1080#1090#1100' '#1087#1072#1088#1072#1084#1077#1090#1088#1099
+    TabOrder = 10
+    OnClick = ChangeNumbers_btnClick
   end
   object SaveDialog1: TSaveDialog
     Left = 216
