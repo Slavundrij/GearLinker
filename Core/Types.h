@@ -63,7 +63,8 @@ public:
 		UnicodeString _sName, UnicodeString _sNumber);
     ~TGear();
 
-    TDesignation Desgination; // Номер детали - ПГТС. ...
+	int invalidateReason;
+	TDesignation Desgination; // Номер детали - ПГТС. ...
     unsigned int uiOrder; // Номер заказа
 	UnicodeString sName; // Название детали (чтоб было)
 	UnicodeString sNumber; // Номер детали (на нем отмечено типо)

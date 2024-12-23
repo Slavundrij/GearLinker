@@ -23,22 +23,6 @@ vector<UnicodeString>gears_id = {
 //map<Key:PGTS, map<Key:NominalDiam, Pair<Allowance, Dr>>>
 extern map<UnicodeString, map<double, pair<double, double>>> RollerSizes;
 
-vector<double>PGTS44_07 = {0.059, 0.058, 0.056};
-vector<double>PGTS34_15 = {0.076, 0.077, 0.071};
-vector<double>PGTS64_05 = {0.043, 0.044, 0.041};
-vector<double>PGTS34_16 = {0.072, 0.072, 0.07};
-vector<double>PGTS64_06 = {0.045, 0.045, 0.043};
-vector<double>PGTS34_14 = {0.067, 0.067, 0.065};
-
-vector<double>PGTS44_07_nom = {9.822, 9.793, 10.035};
-vector<double>PGTS34_15_nom = {36.445, 36.409, 36.715};
-vector<double>PGTS64_05_nom = {11.099, 11.068, 11.325};
-vector<double>PGTS34_16_nom = {35.203, 35.168, 35.463};
-vector<double>PGTS64_06_nom = {9.822, 9.793, 10.035};
-vector<double>PGTS34_14_nom = {36.445, 36.409, 36.715};
-
-vector<double>PGTS64_07 = {0.027};
-vector<double>PGTS24_06 = {0.04};
 vector<double>Dr = {1, 0.99, 1.074, 1.5};
 
 extern vector<double>M;
@@ -46,6 +30,15 @@ extern vector<int>N;
 extern vector<double>Of;
 
 extern UnicodeString baseMeasure;
+
+vector<UnicodeString>denialReasons = {
+	"окончательный контроль -",
+	"подозрительные измерения -",
+	"основной размер пустой -",
+	"высокое биение -",
+	"деталь вне допуска -",
+	"нестандартная причина -"
+};
 // ---------------------------------------------------------------------------
 
 struct possiblePair {
@@ -80,7 +73,7 @@ void getFilledMeasurementRows(unsigned int rowCnt, unsigned int Col,
 	vector<unsigned int>* measurements);
 int fillGearMeasurments(vector<unsigned int>* measurements, TGear* Gear,
 	TList* listparams, int col);
-int checkMasurementsData(TList* listparams, UnicodeString _PGTS);
+int checkMasurementsData(TList* listparams, TGear* Gear);
 bool measureInLimits(stMeasurement* Measurment);
 bool isCellFilled(AnsiString cell);
 

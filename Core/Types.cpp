@@ -91,6 +91,7 @@ UnicodeString TDesignation::getStringDesignation() {
 
 ////////////////////////////////////////////////////
 TGear::TGear(TDesignation _Desgination, unsigned int _uiOrder, UnicodeString _sName, UnicodeString _sNumber) {
+	invalidateReason = -1;
 	Desgination = _Desgination;
 	uiOrder = _uiOrder;
 	sName = _sName;

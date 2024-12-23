@@ -137,6 +137,7 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 		int quantity = 0;
 
 		// All gears in sheet cycle
+		vector<int>denyes(denialReasons.size(), 0);
 		for (int i = 15; i < iColsCount; i++) {
 			UnicodeString gearNumber = vCells.OlePropertyGet("Item", 9, i);
 			int color = vCells.OlePropertyGet("Item", 9, i).OlePropertyGet
@@ -152,6 +153,7 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 				//newGear->listParams = listparams;
 				switch (fillGearMeasurments(&filledMeasuarments, newGear, listparams, i)) {
 				case 0:
+					denyes[newGear->invalidateReason]++;
 					newGear->listParams = listparams;
 					suspGearList->Add(newGear);
 					break;
@@ -169,11 +171,14 @@ void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
 				}
 			}
 		}
-		// FormAddDataFiles->ProgressReset();
+		UnicodeString userNotice = "Причины отсеивания деталей в файле: ";
+		for (int i = 0; i < denyes.size(); i++) {
+			userNotice += denialReasons[i] + " " + denyes[i] + ", ";
+		}
+		memoInfo->Lines->Add(userNotice);
 		memoInfo->Lines->Add(Format("Найдено %d деталей %s", quantity,
 			PGTS.getStringDesignation()));
-
-		// progressbar.clear
+        memoInfo->Lines->Add("");
 	}
 	catch (Exception &E) {
 		memoLog->Lines->Add(Format("Cant open file: %s", WideString(FileName)));
@@ -211,11 +216,11 @@ void BuildGearboxes(TList* suspGearList, TList* stanGearList,
 
 void PaintUsedGears(TList* UsedGearList, TFileList* FileList, TMemo* memoInfo) {
 
+	ExcelApp = CreateOleObject("Excel.Application");
+	ExcelApp.OlePropertySet("Visible", false); // setup Show Excel.
 	for (int i = 0; i < FileList->iGetCountFiles(); i++) {
 		AnsiString FileName = FileList->sGetFile(i);
-		ExcelApp = CreateOleObject("Excel.Application");
 		try {
-			ExcelApp.OlePropertySet("Visible", false); // setup Show Excel.
 			ExcelBook = ExcelApp.OlePropertyGet("Workbooks").OleFunction("Open",
 				WideString(FileName)); // Open Excel File.
 			ExcelSheet = ExcelBook.OlePropertyGet("WorkSheets").OlePropertyGet
@@ -253,8 +258,8 @@ void PaintUsedGears(TList* UsedGearList, TFileList* FileList, TMemo* memoInfo) {
 		}
 		ExcelBook.OleProcedure("Save");
 		ExcelBook.OleProcedure("Close");
-		ExcelApp.OleProcedure("Quit");
 	}
+	ExcelApp.OleProcedure("Quit");
 }
 
 /*
@@ -724,102 +729,61 @@ int fillGearMeasurments(vector<unsigned int> * measurements, TGear* Gear, TList*
 	try {
 		Variant MYCells = ExcelApp.OlePropertyGet("Cells");
 		for (int i = 0; i < measurements->size(); i++) {
+			int rowNum = measurements->at(i);
 			UnicodeString currStr =
-				MYCells.OlePropertyGet("Item", measurements->at(i), col);
-			if (isCellFilled(currStr)) {
-				stMeasurement* Measurment = new stMeasurement;
-				UnicodeString nameStr = MYCells.OlePropertyGet("Item",measurements->at(i), 2);
-				nameStr.Trim();
-				if (!cellIsMeasure(nameStr)) {
-					Measurment->sKeyMeasure = "Окончательный контроль";
-					(currStr == "OK") ? Measurment->fMeasure = 1 : Measurment->fMeasure = 0;
-				}
-				else {
-					Measurment->sKeyMeasure = nameStr;
-					try {
-						Measurment->fMeasure = currStr.ToDouble();
-					} catch (...) {
-						Measurment->fMeasure = 0;
-					}
-					currStr = MYCells.OlePropertyGet("Item",
-						measurements->at(i), 11);
-					try {
-						Measurment->fNominalValue = currStr.ToDouble();
-					} catch (...) {
-						Measurment->fNominalValue = 0;
-					}
-					if (Measurment->sKeyMeasure == baseMeasure) {
-						map<double, pair<double, double>> Nominal_to_all = RollerSizes[Gear->Desgination.getStringDesignation()];
-						if (Nominal_to_all.find(Measurment->fNominalValue) != Nominal_to_all.end()) {
-							Gear->extTol = Nominal_to_all[Measurment->fNominalValue].first;
-							Gear->rollerD = Nominal_to_all[Measurment->fNominalValue].second;
-						} else {
-
-						}
-
-						/*
-						if (Gear->Desgination.getStringDesignation() == gears_id[0]) {
-							auto result = find(begin(PGTS44_07_nom), end(PGTS44_07_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS44_07[result - begin(PGTS44_07_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS44_07_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[1]) {
-							auto result = find(begin(PGTS34_15_nom), end(PGTS34_15_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS34_15[result - begin(PGTS34_15_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS34_15_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[2]) {
-							auto result = find(begin(PGTS64_05_nom), end(PGTS64_05_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS64_05[result - begin(PGTS64_05_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS64_05_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[3]) {
-							auto result = find(begin(PGTS34_16_nom), end(PGTS34_16_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS34_16[result - begin(PGTS34_16_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS34_16_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[4]) {
-							auto result = find(begin(PGTS64_06_nom), end(PGTS64_06_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS64_06[result - begin(PGTS64_06_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS64_06_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[5]) {
-							auto result = find(begin(PGTS34_14_nom), end(PGTS34_14_nom), Measurment->fNominalValue);
-							Gear->extTol = PGTS34_14[result - begin(PGTS34_14_nom)];
-							Gear->rollerD = Dr[result - begin(PGTS34_14_nom)];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[6]) {
-							Gear->extTol = PGTS64_07[0];
-							Gear->rollerD = Dr[3];
-						}
-						else if (Gear->Desgination.getStringDesignation() == gears_id[7]) {
-							Gear->extTol = PGTS24_06[0];
-							Gear->rollerD = Dr[3];
-						}
-                        */
-                    }
-					currStr = MYCells.OlePropertyGet("Item",
-						measurements->at(i), 12);
-					try {
-						Measurment->fToleranceUp = currStr.ToDouble();
-					} catch (...) {
-						Measurment->fToleranceUp = 0;
-					}
-					currStr = MYCells.OlePropertyGet("Item",
-						measurements->at(i), 13);
-					try {
-						Measurment->fToleranceDown = currStr.ToDouble();
-					} catch (...) {
-						Measurment->fToleranceDown = 0;
-					}
-				}
-				void *mrmt = Measurment;
-				listparams->Add(mrmt);
+			MYCells.OlePropertyGet("Item", measurements->at(i), col);
+			stMeasurement* Measurment = new stMeasurement;
+			UnicodeString nameStr = MYCells.OlePropertyGet("Item",measurements->at(i), 2);
+			nameStr.Trim();
+			if (!cellIsMeasure(nameStr)) {
+				Measurment->sKeyMeasure = "Окончательный контроль";
+				(currStr == "OK") ? Measurment->fMeasure = 1 : Measurment->fMeasure = 0;
 			}
+			else {
+				Measurment->sKeyMeasure = nameStr;
+				try {
+					Measurment->fMeasure = currStr.ToDouble();
+				} catch (...) {
+					Measurment->fMeasure = 0;
+				}
+				currStr = MYCells.OlePropertyGet("Item",
+					measurements->at(i), 11);
+				try {
+					Measurment->fNominalValue = currStr.ToDouble();
+				} catch (...) {
+					Measurment->fNominalValue = 0;
+				}
+				if (Measurment->sKeyMeasure == baseMeasure) {
+					map<double, pair<double, double>> Nominal_to_all = RollerSizes[Gear->Desgination.getStringDesignation()];
+					if (Nominal_to_all.find(Measurment->fNominalValue) != Nominal_to_all.end()) {
+						Gear->extTol = Nominal_to_all[Measurment->fNominalValue].first;
+						Gear->rollerD = Nominal_to_all[Measurment->fNominalValue].second;
+					} else {
+
+					}
+				}
+				currStr = MYCells.OlePropertyGet("Item",
+					measurements->at(i), 12);
+				try {
+					Measurment->fToleranceUp = currStr.ToDouble();
+				} catch (...) {
+					Measurment->fToleranceUp = 0;
+				}
+				currStr = MYCells.OlePropertyGet("Item",
+					measurements->at(i), 13);
+				try {
+					Measurment->fToleranceDown = currStr.ToDouble();
+				} catch (...) {
+					Measurment->fToleranceDown = 0;
+				}
+			}
+			void *mrmt = Measurment;
+			listparams->Add(mrmt);
 		}
-		return checkMasurementsData(listparams, Gear->Desgination.getStringDesignation());
+		return checkMasurementsData(listparams, Gear);
 	}
 	catch (...) {
+		Gear->invalidateReason = 5;
 		return 0;
 	}
 }
@@ -880,7 +844,7 @@ int gearWheel(int n) {
 	}
 }
 
-int checkMasurementsData(TList* listparams, UnicodeString _PGTS) {
+int checkMasurementsData(TList* listparams, TGear* Gear) {
 	bool e_controller = true;
 	bool e_operator = true;
 	bool e_roller = true;
@@ -889,6 +853,7 @@ int checkMasurementsData(TList* listparams, UnicodeString _PGTS) {
 	bool e_OK = true;
     //if not exist, detail is suspicious
 	bool is_filled = false;
+	bool is_green = false;
 	double runout = 0;
 	for (int i = 0; i < listparams->Count; i++) {
 		stMeasurement* Measurment = (stMeasurement*)listparams->Items[i];
@@ -910,25 +875,38 @@ int checkMasurementsData(TList* listparams, UnicodeString _PGTS) {
 		}
 		if (Measurment->sKeyMeasure == baseMeasure) {
 			is_filled = true;
+			is_green = measureInLimits(Measurment);
 		}
 	}
+	UnicodeString _PGTS = Gear->Desgination.getStringDesignation();
 	if (!e_OK) {
+		Gear->invalidateReason = 0;
 		return 0;
 	}
 	else if (e_controller && e_operator && !e_roller && !e_runout) {
+		Gear->invalidateReason = 1;
 		return 0;
 	}
 	else if (!is_filled) {
+		Gear->invalidateReason = 2;
         return 0;
 	}
 	else if (runout > 0.1) {
 		if (_PGTS != gears_id[7]) {
+			Gear->invalidateReason = 3;
 			return 0;
 		} else {
 			if (runout > 0.14) {
+				Gear->invalidateReason = 3;
 				return 0;
 			}
-        }
+		}
+	}
+	else if (_PGTS != gears_id[6] && _PGTS != gears_id[7]) {
+		if (!is_green) {
+			Gear->invalidateReason = 4;
+			return 0;
+		}
 	}
 	else {
 		return 1;
