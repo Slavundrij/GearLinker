@@ -16,41 +16,37 @@
 using namespace std;
 
 // ---------------------------------------------------------------------------
-vector<UnicodeString>gears_id = {
-	"ПГТС.721144.007", "ПГТС.721134.015", "ПГТС.721164.005", "ПГТС.721134.016",
-	"ПГТС.721164.006", "ПГТС.721134.014", "ПГТС.721164.007", "ПГТС.721124.006"};
+vector<UnicodeString> gears_id = { "ПГТС.721144.007", "ПГТС.721134.015",
+    "ПГТС.721164.005", "ПГТС.721134.016", "ПГТС.721164.006", "ПГТС.721134.014",
+    "ПГТС.721164.007", "ПГТС.721124.006" };
 
 //map<Key:PGTS, map<Key:NominalDiam, Pair<Allowance, Dr>>>
-extern map<UnicodeString, map<double, pair<double, double>>> RollerSizes;
+extern map<UnicodeString, map<double, pair<double, double> > > RollerSizes;
 
-vector<double>Dr = {1, 0.99, 1.074, 1.5};
+vector<double> Dr = { 1, 0.99, 1.074, 1.5 };
 
-extern vector<double>M;
-extern vector<int>N;
-extern vector<double>Of;
+extern vector<double> M;
+extern vector<int> N;
+extern vector<double> Of;
 
 extern UnicodeString baseMeasure;
 
-vector<UnicodeString>denialReasons = {
-	"окончательный контроль -",
-	"подозрительные измерения -",
-	"основной размер пустой -",
-	"высокое биение -",
-	"деталь вне допуска -",
-	"нестандартная причина -"
-};
+vector<UnicodeString> denialReasons = { "окончательный контроль -",
+    "подозрительные измерения -", "основной размер пустой -",
+    "высокое биение -", "деталь вне допуска -", "нестандартная причина -" };
 // ---------------------------------------------------------------------------
 
-struct possiblePair {
-	TGear* Gear1;
-	TGear* Gear2;
-	UnicodeString wNum;
-	double criteria;
+struct possiblePair
+{
+    TGear* Gear1;
+    TGear* Gear2;
+    UnicodeString wNum;
+    double criteria;
 };
 
-
-class TFileList {
-public:
+class TFileList
+{
+  public:
     TFileList();
     ~TFileList();
 
@@ -62,17 +58,19 @@ public:
     UnicodeString sGetFile(int iIndex);
 
     void vShowFilesListBox(TListBox* lsb);
-
-private:
+  private:
 };
 
-void BuildGearboxes(TList* suspGearList, TList* stanGearList, TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList, TFileList* FileList, TMemo* memoRes);
+void BuildGearboxes(TList* suspGearList, TList* stanGearList,
+    TList* goodGearList, TMemo* memoLog, TMemo* memoInfo, TList* UsedGearList,
+    TFileList* FileList, TMemo* memoRes);
 
-void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList, TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo);
-void getFilledMeasurementRows(unsigned int rowCnt, unsigned int Col,
-	vector<unsigned int>* measurements);
+void vLoadGearsFromExcel(TList* suspGearList, TList* stanGearList,
+    TList* goodGearList, AnsiString FileName, TMemo* memoLog, TMemo* memoInfo);
+void getFilledMeasurementRows(
+    unsigned int rowCnt, unsigned int Col, vector<unsigned int>* measurements);
 int fillGearMeasurments(vector<unsigned int>* measurements, TGear* Gear,
-	TList* listparams, int col);
+    TList* listparams, int col);
 int checkMasurementsData(TList* listparams, TGear* Gear);
 bool measureInLimits(stMeasurement* Measurment);
 bool isCellFilled(AnsiString cell);
@@ -80,8 +78,10 @@ bool isCellFilled(AnsiString cell);
 void buildGoodGearboxes(TList* goodList);
 bool findGear(TList* goodList, UnicodeString desig, vector<TGear*>* gears);
 
-bool findSpecialGear(TList* gearList, int number, vector<TGear*>* measurements, TMemo* memoLog);
-void buildStandartGearboxes(TList* stanList, TList* UsedGearList, TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes);
+bool findSpecialGear(
+    TList* gearList, int number, vector<TGear*>* measurements, TMemo* memoLog);
+void buildStandartGearboxes(TList* stanList, TList* UsedGearList,
+    TMemo* memoLog, TMemo* memoInfo, TMemo* memoRes);
 
 double diameter(TGear* gear, TMemo* memoLog);
 
@@ -99,6 +99,7 @@ possiblePair* findWorstPair(TList* _FindMatches, TMemo* _memoLog);
 void clearAllRepeats(TList* FindMatches, UnicodeString wNum, TMemo* memoInfo);
 UnicodeString parseFileName(AnsiString _FileName);
 
-bool ContainsSubstring(const UnicodeString& str, const UnicodeString& subStr);
+bool ContainsSubstring(const UnicodeString &str, const UnicodeString &subStr);
 
 #endif
+

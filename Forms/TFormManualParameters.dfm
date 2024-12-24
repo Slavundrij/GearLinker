@@ -2,8 +2,8 @@ object FormManualParameters: TFormManualParameters
   Left = 0
   Top = 0
   Caption = #1056#1091#1095#1085#1086#1081' '#1074#1074#1086#1076' '#1087#1072#1088#1072#1084#1077#1090#1088#1086#1074' '#1089#1073#1086#1088#1082#1080
-  ClientHeight = 524
-  ClientWidth = 996
+  ClientHeight = 523
+  ClientWidth = 992
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
